@@ -161,8 +161,16 @@ class FaceGenerator:
             ip_scale = self._ip_scale_with_photo
             try:
                 pipe.set_ip_adapter_scale(ip_scale)
+                _log.info(
+                    "IP-Adapter active with reference photo {} (scale={})",
+                    reference_photo_path, ip_scale,
+                )
             except Exception:  # noqa: BLE001 — IP-Adapter 沒裝就略過
-                _log.warning("set_ip_adapter_scale unavailable; reference photo ignored")
+                _log.warning(
+                    "⚠️ IP-Adapter 不可用 — 您上傳的參考照片 {} 將被忽略。"
+                    "請至 Setup Wizard 重新下載 IP-Adapter image_encoder（~2.5 GB）",
+                    reference_photo_path,
+                )
                 ref_img = None
         else:
             ref_img = None
