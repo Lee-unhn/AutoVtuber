@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual env
+venv/
+.venv/
+env/
+
+# AutoVtuber runtime artifacts (use dir/* not dir/ so .gitkeep can survive)
+config.toml
+models/*
+output/*
+presets/*.json
+logs/*
+*.log
+*.jsonl
+setup_complete.flag
+**/manifest.lock.json
+
+# Qt Linguist compiled
+*.qm
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Allow gitkeep
+!.gitkeep
+!presets/.gitkeep
+!logs/.gitkeep
+!output/.gitkeep
+!models/.gitkeep
+!assets/base_models/.gitkeep
+
+# External vendored repos (clone via setup script instead)
+external/
+
+# Large binary assets (track via setup wizard / DOWNLOAD_MANIFEST.md instead)
+assets/base_models/*.vrm
+*.vrm
+*.glb
+*.obj
+*.ckpt
+*.safetensors
+*.bin
+*.onnx
+
+# Generated outputs (audit artifacts only — keep in docs/ if needed)
+output/_*.png
+output/character_*.png
+output/character_*.vrm
+output/character_*.md
+

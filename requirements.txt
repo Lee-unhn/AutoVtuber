@@ -1,0 +1,51 @@
+# =============================================================================
+#  AutoVtuber — Python 依賴清單（pinned）
+#
+#  ⚠️ PyTorch 必須單獨先裝（CUDA 12.4 wheel 不在 PyPI）：
+#
+#      pip install torch==2.5.1+cu124 torchvision==0.20.1+cu124 \
+#          --index-url https://download.pytorch.org/whl/cu124
+#
+#  確認 RTX 3060 + 驅動 581.95 + CUDA Runtime 12.x 相容。
+# =============================================================================
+
+# === ML 管線 ============================================================
+diffusers==0.31.0
+transformers==4.46.3
+accelerate==1.1.1
+safetensors==0.4.5
+huggingface-hub==0.26.2
+peft==0.13.2
+
+# IP-Adapter 的 image-encoder 包在 IP-Adapter repo 內，不需要單獨依賴
+
+# === 臉部偵測（MediaPipe — Apache 2.0 商用 OK，無需 MSVC 編譯）========
+# 改自原本 insightface（非商用 + 需 Visual C++ Build Tools）
+mediapipe==0.10.18
+
+# === 3D / VRM I/O =======================================================
+trimesh==4.5.2
+pygltflib==1.16.2
+numpy==1.26.4             # 鎖在 1.x（diffusers 部分相依還未升 2.x）
+pillow==11.0.0
+opencv-python-headless==4.10.0.84   # ⚠️ 不要裝 opencv-python，會撞 PySide6 Qt
+
+# === 硬體監控 ===========================================================
+pynvml==11.5.3
+psutil==6.1.0
+
+# === HTTP / 設定 / 日誌 ================================================
+requests==2.32.3
+tomli==2.2.1
+pydantic==2.10.3
+loguru==0.7.3
+
+# === Qt UI ============================================================
+PySide6==6.8.0.2
+PySide6-Addons==6.8.0.2
+
+# === 開發 / 測試（建議裝在另一個 file，但放這也行）==================
+pytest==8.3.4
+pytest-mock==3.14.0
+responses==0.25.3         # mock requests for Ollama tests
+ruff==0.8.4

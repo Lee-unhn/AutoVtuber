@@ -1,0 +1,28 @@
+{
+  "base_model_id": "AvatarSample_A",
+  "atlas_size": [
+    1024,
+    1024
+  ],
+  "target_landmarks": [
+    [
+      415.0,
+      540.0
+    ],
+    [
+      615.0,
+      540.0
+    ],
+    [
+      515.0,
+      660.0
+    ],
+    [
+      515.0,
+      770.0
+    ]
+  ],
+  "mask_path": "face_uv_mask_A.png",
+  "source": "vroid-hardcoded",
+  "note": "4 points (BlazeFace semantics): (RIGHT_EYE中心, LEFT_EYE中心, NOSE_TIP, MOUTH_CENTER). 若 source 為 'vroid-hardcoded-fallback'，是用 VRoid 標準佈局估算，可能需 Blender 微調。"
+}

@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "autovtuber"
+version = "0.1.0-alpha"
+description = "Auto-generate animatable VRM VTuber models from a simple form (Windows desktop)."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+authors = [{ name = "AutoVtuber" }]
+license = { text = "Proprietary (玩票 / future-commercial TBD)" }
+classifiers = [
+    "Operating System :: Microsoft :: Windows :: Windows 11",
+    "Programming Language :: Python :: 3.11",
+    "Environment :: GPU :: NVIDIA CUDA :: 12",
+    "Topic :: Multimedia :: Graphics :: 3D Modeling",
+]
+
+[project.scripts]
+autovtuber = "autovtuber.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+autovtuber = ["ui/*.qml", "ui/*.qss"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RET"]
+ignore = ["E501"]  # line-length handled by formatter
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "gpu: requires a real CUDA GPU and may load >1GB models",
+    "slow: takes >30s",
+    "integration: end-to-end test that touches Ollama / VRM I/O",
+]

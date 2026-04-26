@@ -1,0 +1,48 @@
+# AutoVtuber 設定檔（首次啟動時自動複製為 config.toml）
+# 修改此檔不會影響使用者；修改 config.toml 才會生效。
+
+[app]
+language = "zh_TW"          # zh_TW | zh_CN | en_US
+theme = "dark"              # dark | light
+log_level = "INFO"          # DEBUG | INFO | WARNING | ERROR
+
+[paths]
+# 留空則使用相對於 AutoVtuber/ 的預設路徑
+models_dir = ""
+output_dir = ""
+presets_dir = ""
+logs_dir = ""
+
+[ollama]
+base_url = "http://localhost:11434"
+# 留空則自動偵測（優先小模型 gemma2:2b / qwen2.5:3b，否則用 default_model）
+preferred_model = ""
+default_model = "gemma4:e4b"
+request_timeout_seconds = 60
+unload_poll_timeout_seconds = 10
+
+[generation]
+# 預設極保守參數，符合「別弄壞電腦」原則
+sdxl_steps = 20
+sdxl_cfg_scale = 6.5
+sdxl_size = [1024, 1024]
+ip_adapter_scale_with_photo = 0.7
+ip_adapter_scale_without_photo = 0.0
+seed = -1                   # -1 = 隨機
+
+[safety]
+# 護欄閾值（修改前請讀 docs/HARDWARE_PROTOCOL.md）
+vram_warn_gb = 11.0
+vram_abort_gb = 11.5
+gpu_temp_warn_c = 78
+gpu_temp_abort_c = 83
+ram_warn_pct = 80.0
+ram_abort_pct = 92.0
+disk_warn_gb = 5.0
+disk_abort_gb = 1.0
+poll_interval_seconds = 1.0
+cuda_memory_fraction = 0.92
+
+[commercial]
+# 勾選後 UI 隱藏「商用授權未確認」的模型/資產
+mode = false
