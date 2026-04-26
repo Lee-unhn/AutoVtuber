@@ -55,3 +55,17 @@ def make_download_signals():
         all_done = Signal(bool)  # ok = 所有都成功
 
     return DownloadSignals()
+
+
+def make_face_tracker_signals():
+    """FaceTrackerWorker 用的 signals：webcam frame + blendshape weights。"""
+    from PySide6.QtCore import QObject, Signal
+    from PySide6.QtGui import QImage
+
+    class FaceTrackerSignals(QObject):
+        frame_updated = Signal(QImage)             # webcam frame（含 landmarks 疊加）
+        blendshapes_updated = Signal(dict)         # {VRM blendshape name: weight 0-1}
+        error = Signal(str)
+        stopped = Signal()
+
+    return FaceTrackerSignals()

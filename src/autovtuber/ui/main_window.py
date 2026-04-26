@@ -84,6 +84,13 @@ class MainWindow:
         top_bar.addWidget(QLabel("🌐"))
         top_bar.addWidget(self._lang_combo)
 
+        # 臉部追蹤測試（M3-2）
+        from PySide6.QtWidgets import QPushButton as _QPushButton
+        self._face_track_btn = _QPushButton("👁️ 臉部追蹤")
+        self._face_track_btn.setToolTip("開啟 webcam，即時驗證臉部追蹤 + VRM blendshape weight")
+        self._face_track_btn.clicked.connect(self._open_face_tracker)
+        top_bar.addWidget(self._face_track_btn)
+
         # 緊急停止
         self._stop_btn = make_stop_button()
         self._stop_btn.clicked.connect(lambda: on_emergency_stop("UI emergency stop"))
@@ -193,6 +200,12 @@ class MainWindow:
     def refresh_library(self) -> None:
         """job 完成後呼叫，重新整理角色庫。"""
         self._library.refresh()
+
+    def _open_face_tracker(self) -> None:
+        """開啟臉部追蹤測試 dialog。"""
+        from .face_tracker_dialog import FaceTrackerDialog
+        dlg = FaceTrackerDialog(parent=self._win).build()
+        dlg.exec()
 
     def _apply_dark_theme(self) -> None:
         self._win.setStyleSheet(
