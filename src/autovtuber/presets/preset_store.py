@@ -91,3 +91,61 @@ class PresetStore:
             return True
         except FileNotFoundError:
             return False
+
+    # ---------------- import / export ---------------- #
+
+    def export_preset(self, source_path: Path, dest_path: Path) -> Path:
+        """匯出 preset 到指定位置（單純 copy；保留原始 JSON 結構）。
+
+        使用者可把產出的 .preset.json 寄給朋友，朋友 import_preset() 後就有同樣設定。
+        ⚠️ 不含 .vrm / concept.png — 只有「設定」（form 參數）。
+        """
+        import shutil
+        if not source_path.exists():
+            raise FileNotFoundError(source_path)
+        dest_path = Path(dest_path)
+        dest_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, dest_path)
+        _log.info("Preset exported: {} → {}", source_path.name, dest_path)
+        return dest_path
+
+    def import_preset(self, source_path: Path, new_nickname: str | None = None) -> Path:
+        """從外部 .preset.json 匯入到本地 presets/ 目錄。
+
+        Args:
+            source_path: 外部 preset 檔
+            new_nickname: 可選 — 重新命名（避免 nickname 衝突）
+
+        Returns:
+            匯入後的本地路徑
+
+        Raises:
+            ValueError: 若 source 不是有效 preset JSON
+        """
+        if not source_path.exists():
+            raise FileNotFoundError(source_path)
+        # 驗證是 valid JobResult
+        try:
+            result = self.load(source_path)
+        except Exception as e:
+            raise ValueError(f"無效的 preset 檔案: {e}") from e
+
+        # 若指定新暱稱，patch form
+        if new_nickname:
+            new_form = result.spec.form.model_copy(update={"nickname": new_nickname})
+            result = result.model_copy(update={
+                "spec": result.spec.model_copy(update={"form": new_form}),
+            })
+
+        # 用本地 store 路徑寫入（保留原 job_id/timestamp，避免混淆原作者紀錄）
+        target = self._dir / source_path.name
+        if target.exists():
+            # 衝突 → 加後綴
+            stem = target.stem.replace(".preset", "")
+            i = 1
+            while target.exists():
+                target = self._dir / f"{stem}_imported{i}.preset.json"
+                i += 1
+        target.write_text(result.model_dump_json(indent=2), encoding="utf-8")
+        _log.info("Preset imported: {} → {}", source_path.name, target.name)
+        return target

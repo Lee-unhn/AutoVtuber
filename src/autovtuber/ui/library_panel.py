@@ -52,12 +52,20 @@ class LibraryPanel:
         load_btn.clicked.connect(self._load_selected)
         dup_btn = QPushButton("📋 複製")
         dup_btn.clicked.connect(self._duplicate_selected)
+        export_btn = QPushButton("📤 匯出")
+        export_btn.setToolTip("匯出 .preset.json — 可傳給朋友載入相同設定")
+        export_btn.clicked.connect(self._export_selected)
+        import_btn = QPushButton("📦 匯入")
+        import_btn.setToolTip("從外部 .preset.json 載入設定")
+        import_btn.clicked.connect(self._import_preset)
         del_btn = QPushButton("🗑️ 刪除")
         del_btn.clicked.connect(self._delete_selected)
 
         btn_row.addWidget(refresh_btn)
         btn_row.addWidget(load_btn)
         btn_row.addWidget(dup_btn)
+        btn_row.addWidget(export_btn)
+        btn_row.addWidget(import_btn)
         btn_row.addWidget(del_btn)
         btn_row.addStretch()
         layout.addLayout(btn_row)
@@ -114,6 +122,53 @@ class LibraryPanel:
             self._on_load_to_form(spec)
         except Exception as e:  # noqa: BLE001
             QMessageBox.warning(self._widget, "複製失敗", str(e))
+
+    def _export_selected(self) -> None:
+        from PySide6.QtWidgets import QFileDialog, QMessageBox
+        s = self._selected_summary()
+        if s is None or self._store is None:
+            return
+        target, _ = QFileDialog.getSaveFileName(
+            self._widget,
+            "匯出 Preset",
+            f"{s.nickname}.preset.json",
+            "Preset (*.preset.json *.json)",
+        )
+        if not target:
+            return
+        try:
+            self._store.export_preset(s.path, Path(target))
+            QMessageBox.information(self._widget, "匯出成功", f"已匯出至:\n{target}")
+        except Exception as e:  # noqa: BLE001
+            QMessageBox.warning(self._widget, "匯出失敗", str(e))
+
+    def _import_preset(self) -> None:
+        from PySide6.QtWidgets import QFileDialog, QInputDialog, QMessageBox
+        if self._store is None:
+            return
+        source, _ = QFileDialog.getOpenFileName(
+            self._widget,
+            "選擇要匯入的 Preset",
+            "",
+            "Preset (*.preset.json *.json)",
+        )
+        if not source:
+            return
+        # 可選重新命名
+        new_nick, ok = QInputDialog.getText(
+            self._widget,
+            "新暱稱（可選）",
+            "若想重新命名匯入的 preset，請輸入新暱稱（留空保留原名）：",
+        )
+        try:
+            target = self._store.import_preset(
+                Path(source),
+                new_nickname=new_nick.strip() if (ok and new_nick.strip()) else None,
+            )
+            QMessageBox.information(self._widget, "匯入成功", f"已匯入到角色庫:\n{target.name}")
+            self.refresh()
+        except Exception as e:  # noqa: BLE001
+            QMessageBox.warning(self._widget, "匯入失敗", str(e))
 
     def _delete_selected(self) -> None:
         from PySide6.QtWidgets import QMessageBox
