@@ -3,10 +3,10 @@
 > 使用者填一張表單 → 5–10 分鐘輸出可直接載入 VSeeFace 的 `.vrm` VTuber 模型。
 > 取代傳統 20–100 小時的 Live2D 繪製 + 綁定流程。
 
-[![pytest](https://img.shields.io/badge/pytest-69%2F69_passing-brightgreen)](#測試)
+[![pytest](https://img.shields.io/badge/pytest-99%2F99_passing-brightgreen)](#測試)
 [![python](https://img.shields.io/badge/python-3.12-blue)](#環境需求)
 [![license](https://img.shields.io/badge/license-MIT-blue)](#授權)
-[![status](https://img.shields.io/badge/MVP1+MVP2-100%25_PASS-success)](#開發狀態)
+[![status](https://img.shields.io/badge/MVP1+MVP2+MVP3-100%25_complete-success)](#開發狀態)
 
 ---
 
@@ -144,6 +144,25 @@
 | 3 vrm_assemble | 2.3s | MeshFitter tint + recolor + .vrm |
 | **合計** | **488.5s** ≈ 8 分鐘 | |
 
+### Session 5 — MVP3 全部 6 項完成
+
+| 任務 | 模組 | 完成度 |
+|---|---|---|
+| **M3-1** Setup Wizard | `setup/resource_check.py` 11 項偵測 + `setup/downloader.py` 多來源 dispatch (HF/git/Ollama) + 重寫 `ui/setup_wizard.py` 5 頁 + `main.py` first-run check | ✅ |
+| **M3-2** Webcam Tracker | `pipeline/face_tracker.py` 478 點 → 12 個 VRM blendshape (Joy/Angry/Sorrow/Fun/A/I/U/E/O/Blink) + `workers/face_tracker_worker.py` cv2+mediapipe QThread + `ui/face_tracker_dialog.py` 即時 progress bar | ✅ |
+| **M3-3** Reference Photo | 確認 wiring 完整 + 改善 IP-Adapter 缺檔警告 + 3 個 wiring 測試 | ✅ |
+| **M3-4** Multi-base 選單 | `form_panel.py` 加 base 選單（A/B/C 男女）+ tooltip | ✅ |
+| **M3-5** Preset Import/Export | `PresetStore` 加 import_preset/export_preset + `LibraryPanel` 按鈕 + 11 個測試 | ✅ |
+| **M3-6** PyInstaller 打包 | `autovtuber.spec` --onedir + `docs/BUILDING.md` 含已知陷阱表 | ✅ |
+
+**pytest 69 → 99 全綠**（+30 測試）
+
+新功能展示：
+- 第一次啟動自動跳 Setup Wizard 一鍵下載 12 GB 模型
+- 點 top bar **「👁️ 臉部追蹤」** → webcam dialog 看 12 個 blendshape weight 即時 progress bar
+- 表單可選 base 模型（女 A / 女 B / 男 C）
+- 角色庫 📤 匯出 / 📦 匯入 跨機器分享角色設定
+
 ---
 
 ## 🛠 技術棧
@@ -175,7 +194,7 @@ autovtuber/
 │   ├── config/         # settings (TOML) + paths + manifest
 │   ├── utils/          # logging / timing / path_helpers
 │   └── main.py         # python -m autovtuber 入口
-├── tests/              # pytest 69 件全綠
+├── tests/              # pytest 99 件全綠
 ├── scripts/            # smoke_test_e2e / smoke_test_triposr / smoke_test_mesh_fitter / render_mesh_preview
 ├── external/TripoSR/   # vendored (gitignored — clone via setup wizard)
 ├── assets/base_models/ # 3 個 VRoid 樣本 (gitignored)
@@ -254,7 +273,7 @@ python scripts\smoke_test_e2e.py
 ## 🧪 測試
 
 ```powershell
-pytest                # 69 件全綠
+pytest                # 99 件全綠
 pytest -v -k tint     # 只跑 MeshFitter tint mode 測試
 ```
 
@@ -271,7 +290,7 @@ pytest -v -k tint     # 只跑 MeshFitter tint mode 測試
 |---|---|---|
 | MVP1 | 表單 → SDXL → VRoid recolor → .vrm | ✅ 100%（含 persona）|
 | MVP2 | + Image-to-3D + Mesh fit → VRM with skin tint | ✅ 100%（Evidence Collector 8.5/10 PASS）|
-| MVP3 | + Setup wizard 自動化 + Webcam tracking + 多角度 reference photo | 🟡 50%（規劃見 `docs/MVP3_PLAN.md`）|
+| MVP3 | + Setup Wizard / Webcam tracker / Multi-base / Preset import-export / Reference photo / PyInstaller | ✅ 100%（M3-1..M3-6 全部完成，規劃見 `docs/MVP3_PLAN.md` / 打包見 `docs/BUILDING.md`）|
 
 ---
 

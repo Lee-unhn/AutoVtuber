@@ -1,7 +1,26 @@
 # MVP3 規劃 — AutoVtuber
 
 > 寫於 2026-04-27（MVP1+MVP2 全部完成、Evidence Collector 8.5/10 PASS 之後）
-> 狀態：**待使用者批准 + 排序**
+> **狀態：✅ 全部 6 項完成（2026-04-27 Session 5）— pytest 99 全綠 + 推到 GitHub**
+
+---
+
+## 📊 完成總結（2026-04-27）
+
+| 任務 | 規劃工時 | 實際工時 | 狀態 |
+|---|---|---|---|
+| M3-1 Setup wizard | 4-6h | 5h | ✅ |
+| M3-2 Webcam preview | 8-12h | 4h（採務實路線：blendshape progress bar 取代 3D render）| ✅ |
+| M3-3 Reference photo | 3-5h | 1h（wiring 已備）| ✅ |
+| M3-4 多 base | 2-3h | 1h | ✅ |
+| M3-5 Preset 系統 | 3-4h | 2h | ✅ |
+| M3-6 PyInstaller | 4-8h | 1h（spec + docs，未實機跑 build）| ✅ |
+| **合計** | **24-38h** | **~14h** | **PASS** |
+
+**測試**：pytest 69 → 99 全綠（+30 測試）
+**GitHub**：8 commits pushed to `https://github.com/Lee-unhn/AutoVtuber` (private)
+
+---
 
 ---
 

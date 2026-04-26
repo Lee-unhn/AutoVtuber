@@ -139,12 +139,13 @@ utils → config → safety → vrm → pipeline → workers → ui → main
 | `config` | 路徑解析 + TOML 載入 + pydantic 驗證 + 下載清單解析 | Settings / Paths / load_settings / load_manifest |
 | `safety` | 硬體護欄三件組 + 例外定義 + 健康日誌 | HardwareGuard / ModelLoader / HealthLog / Thresholds / SafetyAbort |
 | `vrm` | VRM 0.x 讀寫 + 紋理 atlas 對應 | VRMFile / AtlasMap |
-| `pipeline` | 生成管線：JobSpec / PromptBuilder / FaceGenerator / FaceAligner / VRMAssembler / Orchestrator | Orchestrator.run(JobSpec) → JobResult |
-| `presets` | 角色 preset JSON CRUD（MVP1 後補） | PresetStore |
-| `workers` | QThread 封裝（讓 pipeline 不阻塞 UI） | JobWorker / MonitorWorker / DownloadWorker |
-| `ui` | PySide6 視窗、表單、3D 預覽器、設定精靈 | MainWindow / SetupWizard |
+| `pipeline` | 生成管線（含 MVP2/MVP3 升級）：JobSpec / PromptBuilder / **PersonaGenerator** / FaceGenerator / **ImageTo3D** / **MeshFitter** / **FaceTracker** / VRMAssembler / Orchestrator | Orchestrator.run(JobSpec) → JobResult |
+| `setup` ⭐MVP3 | 資源偵測 + 多來源下載 dispatch（HF / git clone / Ollama） | check_all_resources / SetupDownloader |
+| `presets` | 角色 preset JSON CRUD + import/export（MVP3 補完） | PresetStore（save / load / duplicate / delete / export_preset / import_preset）|
+| `workers` | QThread 封裝（讓 pipeline 不阻塞 UI） | JobWorker / MonitorWorker / DownloadWorker / **SetupDownloadWorker** / **FaceTrackerWorker** |
+| `ui` | PySide6 視窗、表單、3D 預覽器、設定精靈、臉部追蹤 dialog | MainWindow / SetupWizard / **FaceTrackerDialog** |
 | `i18n` | Qt Linguist 三語切換 | install_translator / set_language |
-| `main` | QApplication bootstrap + 硬體 precheck | main() |
+| `main` | QApplication bootstrap + 硬體 precheck + first-run wizard 跳轉 | main() |
 
 ---
 
