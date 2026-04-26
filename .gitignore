@@ -64,3 +64,8 @@ output/character_*.png
 output/character_*.vrm
 output/character_*.md
 
+
+# PyInstaller build artifacts
+build/
+dist/
+*.spec.bak
