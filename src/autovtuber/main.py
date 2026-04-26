@@ -204,6 +204,18 @@ def main() -> int:
         _job_threads.append(thread)
         thread.start()
 
+    # 6.5 First-run check：若沒 setup_complete.flag → 跳 SetupWizard
+    if not paths.setup_flag.exists():
+        log.info("setup_complete.flag missing → launching first-run setup wizard")
+        from .ui.setup_wizard import SetupWizard
+        wizard = SetupWizard(paths, ollama_base_url=settings.ollama.base_url).build()
+        result = wizard.exec()
+        if result == 0:  # QDialog.Rejected → 使用者取消
+            log.warning("Setup wizard cancelled by user; exiting")
+            guard.stop()
+            return 0
+        log.info("Setup wizard accepted; proceeding to main window")
+
     win = MainWindow(
         app,
         paths,
