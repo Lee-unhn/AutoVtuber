@@ -50,6 +50,13 @@ STYLE_LABELS = {
     StyleGenre.SEMI_REALISTIC: "半寫實",
 }
 
+# Base VRM 模型清單（含中文描述 + 性別 + 風格簡述）
+BASE_MODEL_OPTIONS = [
+    ("AvatarSample_A", "👩 樣本 A — 女性 / 標準臉型（預設推薦）"),
+    ("AvatarSample_B", "👩 樣本 B — 女性 / 不同五官（替代風格）"),
+    ("AvatarSample_C", "👨 樣本 C — 男性 / 較高身形"),
+]
+
 
 class FormPanel:
     """組合多個 widget 的表單；提供 to_form_input() 取出 FormInput。"""
@@ -84,6 +91,16 @@ class FormPanel:
         self._nickname.setPlaceholderText("給角色一個名字")
         self._nickname.setMaxLength(20)
         form.addRow("暱稱", self._nickname)
+
+        # Base VRM 模型選擇
+        self._base_model = QComboBox()
+        for model_id, label in BASE_MODEL_OPTIONS:
+            self._base_model.addItem(label, userData=model_id)
+        self._base_model.setToolTip(
+            "選擇要使用的 VRoid 基礎角色模型。Stage 3 會把 SDXL 出來的概念色彩\n"
+            "（髮色、眼色、膚色）套到這個 base 模型，產出最終 .vrm。"
+        )
+        form.addRow("基礎模型", self._base_model)
 
         # 髮色
         self._hair_color = HexColorPicker("髮色", initial_hex="#5B3A29")
@@ -160,6 +177,7 @@ class FormPanel:
         self._set_combo(self._hair_style, form.hair_style.value)
         self._set_combo(self._eye_shape, form.eye_shape.value)
         self._set_combo(self._style, form.style.value)
+        self._set_combo(self._base_model, form.base_model_id)
         self._personality.set_value(form.personality)
         self._extra.setPlainText(form.extra_freeform)
         self._reference_photo_path = form.reference_photo_path
@@ -179,6 +197,7 @@ class FormPanel:
             personality=self._personality.value,
             extra_freeform=self._extra.toPlainText().strip(),
             reference_photo_path=self._reference_photo_path,
+            base_model_id=self._base_model.currentData() or "AvatarSample_A",
         )
 
     def set_busy(self, busy: bool) -> None:
