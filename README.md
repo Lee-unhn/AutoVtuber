@@ -3,10 +3,10 @@
 > 使用者填一張表單 → 5–10 分鐘輸出可直接載入 VSeeFace 的 `.vrm` VTuber 模型。
 > 取代傳統 20–100 小時的 Live2D 繪製 + 綁定流程。
 
-[![pytest](https://img.shields.io/badge/pytest-99%2F99_passing-brightgreen)](#測試)
+[![pytest](https://img.shields.io/badge/pytest-139%2F139_passing-brightgreen)](#測試)
 [![python](https://img.shields.io/badge/python-3.12-blue)](#環境需求)
 [![license](https://img.shields.io/badge/license-MIT-blue)](#授權)
-[![status](https://img.shields.io/badge/MVP1+MVP2+MVP3-100%25_complete-success)](#開發狀態)
+[![status](https://img.shields.io/badge/MVP1+2+3+4α-100%25_complete-success)](#開發狀態)
 
 ---
 
@@ -144,6 +144,16 @@
 | 3 vrm_assemble | 2.3s | MeshFitter tint + recolor + .vrm |
 | **合計** | **488.5s** ≈ 8 分鐘 | |
 
+### Sprint MVP4-α — 主旨對齊 ROI 三項（2026-04-27 Session 6）
+
+| 任務 | 模組 | 主旨命中 |
+|---|---|---|
+| **R2** SDXL 概念圖預覽 + 微調循環 | Orchestrator 拆 `run_concept` + `run_full_from_concept`；ConceptWorker QThread；表單 🎨 預覽按鈕 | 命中「**時間目標**」：使用者 5 min 預覽不滿意可微調，省下完整 8 min 重跑 |
+| **R3** SDXL hair/eye HSV-based 嚴守度 | `_hex_to_color_tag` 改用 colorsys（解 #7B1F1F 暗紅→brown bug）+ `_color_strength_modifier`（dark/light/vivid 修飾詞）+ anti-drift eye negative | 命中「**品質目標**」：使用者填的色彩會被嚴守 |
+| **R1** Perfect Sync 52 ARKit blendshape export | `vrm/blendshape_writer.py` mapping 52 ARKit name → VRoid morph + 強度% | 命中「**VSeeFace/Warudo 兼容**」：mediapipe Blendshape V2 直送 weight |
+
+實機驗證：AvatarSample_B 從 15 → 67 blendshape groups（+52 ARKit），save+reload 持久化通過。
+
 ### Session 5 — MVP3 全部 6 項完成
 
 | 任務 | 模組 | 完成度 |
@@ -194,7 +204,7 @@ autovtuber/
 │   ├── config/         # settings (TOML) + paths + manifest
 │   ├── utils/          # logging / timing / path_helpers
 │   └── main.py         # python -m autovtuber 入口
-├── tests/              # pytest 99 件全綠
+├── tests/              # pytest 139 件全綠
 ├── scripts/            # smoke_test_e2e / smoke_test_triposr / smoke_test_mesh_fitter / render_mesh_preview
 ├── external/TripoSR/   # vendored (gitignored — clone via setup wizard)
 ├── assets/base_models/ # 3 個 VRoid 樣本 (gitignored)
@@ -273,7 +283,7 @@ python scripts\smoke_test_e2e.py
 ## 🧪 測試
 
 ```powershell
-pytest                # 99 件全綠
+pytest                # 139 件全綠
 pytest -v -k tint     # 只跑 MeshFitter tint mode 測試
 ```
 
