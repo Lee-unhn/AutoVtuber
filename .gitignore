@@ -69,3 +69,6 @@ output/character_*.md
 build/
 dist/
 *.spec.bak
+
+# Claude Code project-local settings (per-user, not team)
+.claude/settings.local.json

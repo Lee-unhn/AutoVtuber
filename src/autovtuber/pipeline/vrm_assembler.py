@@ -43,6 +43,7 @@ class VRMAssembler:
         face_aligner: FaceAligner | None = None,
         tsr_mesh: "trimesh.Trimesh | None" = None,
         mesh_fitter: "MeshFitter | None" = None,
+        add_arkit_perfect_sync: bool = True,
     ) -> Path:
         """主流程：載入 base.vrm → 可選 mesh fit (tint) → recolor 髮/眼 → 存檔。
 
@@ -108,6 +109,15 @@ class VRMAssembler:
         iris_atlas = vrm.get_image_pil(atlas.eye_iris_index)
         new_iris = recolor_hsv(iris_atlas, form.eye_color_hex, saturation_blend=0.85, value_match=0.5)
         vrm.replace_image(atlas.eye_iris_index, new_iris, mime_type="image/png")
+
+        # 5. (MVP4-α R1) 加 ARKit Perfect Sync 52 個 blendshape clips
+        if add_arkit_perfect_sync:
+            try:
+                from ..vrm.blendshape_writer import VRMBlendshapeWriter
+                added = VRMBlendshapeWriter.add_arkit_clips(vrm)
+                _log.info("✅ Added {} ARKit Perfect Sync clips for Warudo/VSeeFace", added)
+            except Exception as e:  # noqa: BLE001 — 失敗不擋 .vrm 寫檔
+                _log.warning("ARKit clips add failed (non-fatal): {}", e)
 
         out = vrm.save(output_path)
         _log.info("✅ VRM saved: {}", out)
