@@ -43,34 +43,65 @@ _HAIR_COLOR_TAGS: dict[str, str] = {
 
 
 def _hex_to_color_tag(hex_str: str, target: str = "hair") -> str:
-    """`#RRGGBB` → "<color> hair" 或 "<color> eyes"。"""
-    h = hex_str.lstrip("#")
-    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-    # 用簡單規則決定主色名
-    avg = (r + g + b) / 3
-    if avg < 40:
-        color = "black"
-    elif avg > 220 and abs(r - g) < 20 and abs(g - b) < 20:
-        color = "white" if target == "hair" else "grey"
-    elif r > 200 and g > 180 and b < 100:
+    """`#RRGGBB` → "<color> hair" 或 "<color> eyes"。
+
+    R3 升級：改用 HSV-based 分類（原 RGB rules 對暗紅 #7B1F1F 算成 brown 是 bug）。
+    HSV 對「色相」分類比 RGB 強，且能正確處理「亮藍 vs 暗藍」「橘色 vs 棕色」。
+    """
+    import colorsys
+    h_str = hex_str.lstrip("#")
+    r, g, b = int(h_str[0:2], 16), int(h_str[2:4], 16), int(h_str[4:6], 16)
+    h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+    h_deg = h * 360
+
+    # 處理灰階（極暗/極亮/低飽和）
+    if v < 0.15:
+        return f"black {target}"
+    if v > 0.88 and s < 0.10:
+        return f"{'white' if target == 'hair' else 'grey'} {target}"
+    if s < 0.12:
+        return f"{'silver' if target == 'hair' else 'grey'} {target}"
+
+    # 按色相分類
+    if h_deg < 15 or h_deg >= 345:
+        # 紅 vs 粉紅：高 V + 低 S → 粉（如 #FFC0CB），否則紅
+        color = "pink" if (v > 0.85 and s < 0.50) else "red"
+    elif h_deg < 45:
+        # 暖橘：高 V 是 orange（金髮），低 V 是 brown
+        color = "orange" if v > 0.65 else "brown"
+    elif h_deg < 65:
         color = "blonde" if target == "hair" else "yellow"
-    elif r > g and r > b and r > 150:
-        color = "red"
-    elif g > r and g > b:
+    elif h_deg < 150:
         color = "green"
-    elif b > r and b > g:
+    elif h_deg < 200:
+        color = "blue"  # cyan-ish 也歸藍
+    elif h_deg < 250:
         color = "blue"
-    elif r > 100 and g > 50 and b < 100:
-        color = "brown"
-    elif r > 200 and b > 150:
-        color = "pink"
-    elif r > 150 and b > 150 and g < 150:
+    elif h_deg < 290:
         color = "purple"
-    elif r > 180 and g > 180 and b > 180:
-        color = "silver" if target == "hair" else "grey"
-    else:
-        color = "brown" if target == "hair" else "blue"
+    else:  # 290-345
+        # 紫紅 vs 粉紅：飽和度 + 亮度區分
+        color = "pink" if (v > 0.7 or s < 0.6) else "purple"
+
     return f"{color} {target}"
+
+
+def _color_strength_modifier(hex_str: str) -> str:
+    """根據 HSV S/V 給 SDXL 「強度修飾詞」加強色彩穩定。
+
+    例：#5B3A29 (低 V 暗棕) → "deep brown"；#FFB6C1 (高 V 淡粉) → "light pink"
+    """
+    import colorsys
+    h_str = hex_str.lstrip("#")
+    r, g, b = int(h_str[0:2], 16), int(h_str[2:4], 16), int(h_str[4:6], 16)
+    _h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+    if v < 0.40:
+        return "dark"
+    if v > 0.85:
+        return "light"
+    if s > 0.75:
+        return "vivid"
+    return ""
 
 
 _ALL_HAIR_COLORS = ["black", "white", "blonde", "red", "green", "blue", "brown", "pink", "purple", "silver", "grey"]
@@ -413,27 +444,41 @@ class PromptBuilder:
         content = body.get("message", {}).get("content", "")
         positive, negative = self._parse_response(content)
 
-        # Post-process: 強制 hair/eye tag 出現（LLM 偶爾忘記）+ anti-drift negative
-        hair_tag = _hex_to_color_tag(form.hair_color_hex, "hair")
-        eye_tag = _hex_to_color_tag(form.eye_color_hex, "eyes")
-        if hair_tag.split()[0] not in positive.lower():
-            _log.info("LLM omitted hair tag '{}'; force-prepending", hair_tag)
+        # R3 Post-process: 強制 hair/eye tag 出現（LLM 偶爾忘記）+ anti-drift negative
+        hair_color = _hex_to_color_tag(form.hair_color_hex, "hair")
+        eye_color = _hex_to_color_tag(form.eye_color_hex, "eyes")
+        hair_strength = _color_strength_modifier(form.hair_color_hex)
+        eye_strength = _color_strength_modifier(form.eye_color_hex)
+        hair_tag = f"{hair_strength} {hair_color}".strip()
+        eye_tag = f"{eye_strength} {eye_color}".strip()
+        # 用色名（不含 strength）做 contains 判定，更寬鬆
+        hair_color_name = hair_color.split()[0]
+        eye_color_name = eye_color.split()[0]
+        if hair_color_name not in positive.lower():
+            _log.info("LLM omitted hair color '{}'; force-prepending '{}'", hair_color_name, hair_tag)
             positive = f"{hair_tag}, " + positive
-        if eye_tag.split()[0] not in positive.lower():
-            _log.info("LLM omitted eye tag '{}'; force-prepending", eye_tag)
+        if eye_color_name not in positive.lower():
+            _log.info("LLM omitted eye color '{}'; force-prepending '{}'", eye_color_name, eye_tag)
             positive = f"{eye_tag}, " + positive
-        # Anti-drift negative：排除其他髮色
-        anti_drift_hair = _other_hair_color_tags(hair_tag)
-        if anti_drift_hair and not any(t in negative for t in anti_drift_hair):
-            negative = negative + ", " + ", ".join(anti_drift_hair)
+        # Anti-drift negative：排除其他髮色 + 其他眼色
+        anti_drift_hair = _other_hair_color_tags(hair_color)
+        anti_drift_eye = [f"{c} eyes" for c in _ALL_HAIR_COLORS if c != eye_color_name]
+        for tag_list in (anti_drift_hair, anti_drift_eye):
+            if tag_list and not any(t in negative for t in tag_list):
+                negative = negative + ", " + ", ".join(tag_list)
 
         return GeneratedPrompt(positive=positive, negative=negative)
 
     @staticmethod
     def _format_user_message(form: FormInput) -> str:
-        # 把 hex 轉成具體 booru-style 色名，讓 LLM 能直接複製「強約束」的字串
-        hair_tag = _hex_to_color_tag(form.hair_color_hex, "hair")
-        eye_tag = _hex_to_color_tag(form.eye_color_hex, "eyes")
+        # R3：把 hex 轉色名 + 強度修飾詞，讓 LLM 雙保險
+        hair_color = _hex_to_color_tag(form.hair_color_hex, "hair")
+        eye_color = _hex_to_color_tag(form.eye_color_hex, "eyes")
+        hair_strength = _color_strength_modifier(form.hair_color_hex)
+        eye_strength = _color_strength_modifier(form.eye_color_hex)
+        # 組合：例 "deep brown hair" / "vivid red eyes" / "blonde hair"
+        hair_tag = f"{hair_strength} {hair_color}".strip()
+        eye_tag = f"{eye_strength} {eye_color}".strip()
         return json.dumps(
             {
                 "hair_color_hex": form.hair_color_hex,
@@ -449,7 +494,9 @@ class PromptBuilder:
                 "RULE": (
                     f"You MUST include the exact tag '{hair_tag}' in POSITIVE. "
                     f"You MUST include the exact tag '{eye_tag}' in POSITIVE. "
-                    f"Do NOT use any other hair/eye color tag."
+                    f"Do NOT use any other hair/eye color tag. "
+                    f"If the user specified a strength modifier (deep/light/vivid), "
+                    f"keep it — it controls saturation/brightness and matters for skin/hair tone."
                 ),
             },
             ensure_ascii=False,
