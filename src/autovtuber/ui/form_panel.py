@@ -61,7 +61,13 @@ BASE_MODEL_OPTIONS = [
 class FormPanel:
     """組合多個 widget 的表單；提供 to_form_input() 取出 FormInput。"""
 
-    def __init__(self, parent: "QWidget | None" = None, on_submit: Callable[[FormInput], None] | None = None):
+    def __init__(
+        self,
+        parent: "QWidget | None" = None,
+        on_submit: Callable[[FormInput], None] | None = None,
+        on_preview_concept: Callable[[FormInput], None] | None = None,
+        on_finish_from_concept: Callable[[], None] | None = None,
+    ):
         from PySide6.QtCore import Qt
         from PySide6.QtWidgets import (
             QComboBox,
@@ -77,6 +83,8 @@ class FormPanel:
         )
 
         self._on_submit = on_submit
+        self._on_preview_concept = on_preview_concept
+        self._on_finish_from_concept = on_finish_from_concept
         self._reference_photo_path: str | None = None
         self._file_dialog = QFileDialog
 
@@ -158,11 +166,30 @@ class FormPanel:
 
         outer.addLayout(form)
 
-        # 提交
-        self._generate_btn = QPushButton("✨ 開始生成 V皮")
-        self._generate_btn.setMinimumHeight(48)
+        # 提交區（MVP4-α R2：拆兩段）
+        # 1. 🎨 預覽概念圖（只跑 Stage 1+2，~5 min）— 主要按鈕，使用者新流程
+        # 2. ✨ 完成 V皮（用 cached concept 跑 Stage 2.5+3，~30s）— 預覽滿意才啟用
+        # 3. 💨 完整 e2e（向後相容，一鍵跑完）— 為已知參數的使用者保留
+        self._preview_btn = QPushButton("🎨 預覽概念圖（推薦：5 分鐘看 SDXL 概念，不滿意可微調）")
+        self._preview_btn.setMinimumHeight(48)
+        self._preview_btn.setStyleSheet("background:#3b6ea5; color:white; font-weight:bold;")
+        self._preview_btn.clicked.connect(self._submit_preview)
+        outer.addWidget(self._preview_btn)
+
+        finish_row = QHBoxLayout()
+        self._finish_btn = QPushButton("✨ 完成 V皮（用上面的概念圖組 .vrm，~30 秒）")
+        self._finish_btn.setMinimumHeight(40)
+        self._finish_btn.setEnabled(False)  # 沒概念圖時 disabled
+        self._finish_btn.setToolTip("先點「🎨 預覽概念圖」拿到滿意的 SDXL 圖，這個按鈕才會啟用")
+        self._finish_btn.clicked.connect(self._submit_finish)
+        finish_row.addWidget(self._finish_btn)
+
+        self._generate_btn = QPushButton("💨 直接完整生成（跳過預覽）")
+        self._generate_btn.setMinimumHeight(40)
+        self._generate_btn.setToolTip("一鍵跑完整 8 分鐘 e2e，適合已知表單參數的回頭客")
         self._generate_btn.clicked.connect(self._submit)
-        outer.addWidget(self._generate_btn)
+        finish_row.addWidget(self._generate_btn)
+        outer.addLayout(finish_row)
 
     @property
     def widget(self):
@@ -201,12 +228,21 @@ class FormPanel:
         )
 
     def set_busy(self, busy: bool) -> None:
+        """進行中時所有提交按鈕一起 disabled。"""
         self._generate_btn.setEnabled(not busy)
-        self._generate_btn.setText("生成中..." if busy else "✨ 開始生成 V皮")
+        self._preview_btn.setEnabled(not busy)
+        # 完成按鈕需要有 concept 才啟用；busy=True 一律 disable，busy=False 維持原狀
+        if busy:
+            self._finish_btn.setEnabled(False)
+
+    def set_concept_ready(self, ready: bool) -> None:
+        """ConceptWorker 跑完通知；ready=True 啟用「✨ 完成 V皮」按鈕。"""
+        self._finish_btn.setEnabled(ready)
 
     # ---------------- private ---------------- #
 
     def _submit(self) -> None:
+        """💨 完整 e2e（向後相容）。"""
         if self._on_submit is None:
             return
         try:
@@ -216,6 +252,26 @@ class FormPanel:
             QMessageBox.warning(self._widget, "表單錯誤", str(e))
             return
         self._on_submit(form)
+
+    def _submit_preview(self) -> None:
+        """🎨 跑 ConceptWorker（只 Stage 1+2）。"""
+        if self._on_preview_concept is None:
+            # callback 沒接 → 退回完整 run
+            self._submit()
+            return
+        try:
+            form = self.to_form_input()
+        except Exception as e:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.warning(self._widget, "表單錯誤", str(e))
+            return
+        self._on_preview_concept(form)
+
+    def _submit_finish(self) -> None:
+        """✨ 跑 FullFromConceptWorker（用 cached concept）。"""
+        if self._on_finish_from_concept is None:
+            return
+        self._on_finish_from_concept()
 
     def _choose_photo(self) -> None:
         path, _ = self._file_dialog.getOpenFileName(

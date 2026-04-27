@@ -37,6 +37,8 @@ class MainWindow:
         monitor_signals,
         on_emergency_stop,
         on_submit_job,
+        on_preview_concept=None,
+        on_finish_from_concept=None,
     ):
         from PySide6.QtCore import Qt
         from PySide6.QtWidgets import (
@@ -55,6 +57,8 @@ class MainWindow:
         self._settings = settings
         self._on_emergency_stop = on_emergency_stop
         self._on_submit_job = on_submit_job
+        self._on_preview_concept = on_preview_concept
+        self._on_finish_from_concept = on_finish_from_concept
 
         self._win = QMainWindow()
         self._win.setWindowTitle("AutoVtuber 自動化 V皮工坊")
@@ -105,7 +109,11 @@ class MainWindow:
         # 分頁 1：建立
         create_page = QWidget()
         create_layout = QHBoxLayout(create_page)
-        self._form = FormPanel(on_submit=self._handle_submit)
+        self._form = FormPanel(
+            on_submit=self._handle_submit,
+            on_preview_concept=self._handle_preview_concept,
+            on_finish_from_concept=self._handle_finish_from_concept,
+        )
         create_layout.addWidget(self._form.widget, stretch=1)
 
         # 3D 預覽器（QtQuick3D） — 嘗試建立；失敗 fallback 到文字 placeholder
@@ -168,6 +176,22 @@ class MainWindow:
         self._form.set_busy(busy)
         self._status.showMessage("生成中..." if busy else "就緒")
 
+    def set_concept_ready(self, ready: bool) -> None:
+        """ConceptWorker 跑完通知；ready=True 啟用「✨ 完成 V皮」按鈕。"""
+        self._form.set_concept_ready(ready)
+
+    def load_concept_in_preview(self, image_path) -> None:
+        """ConceptWorker 跑完把 SDXL 概念圖載到預覽器（原地顯示，不過 3D）。"""
+        # preview_3d 是 QtQuick3D；我們把 image 顯示到 status bar 訊息，
+        # 並打開 image viewer 讓使用者看
+        from pathlib import Path
+        try:
+            import os
+            os.startfile(str(image_path))  # Windows 內建 viewer
+        except Exception as e:  # noqa: BLE001
+            _log.warning("無法開啟概念圖 viewer: {}", e)
+        self._status.showMessage(f"🎨 概念圖：{Path(image_path).name}", 8000)
+
     # ---------- handlers ---------- #
 
     def _handle_submit(self, form: FormInput) -> None:
@@ -175,6 +199,26 @@ class MainWindow:
         _log.info("Submitting job {} (nickname={})", spec.job_id, form.nickname)
         self.set_busy(True)
         self._on_submit_job(spec)
+
+    def _handle_preview_concept(self, form: FormInput) -> None:
+        """🎨 預覽概念圖 callback。"""
+        if self._on_preview_concept is None:
+            # 沒接 callback → 退回完整 run
+            self._handle_submit(form)
+            return
+        spec = JobSpec(form=form)
+        _log.info("Concept preview {} (nickname={})", spec.job_id, form.nickname)
+        self.set_busy(True)
+        self.set_concept_ready(False)  # 新一輪預覽，先 disable finish 按鈕
+        self._on_preview_concept(spec)
+
+    def _handle_finish_from_concept(self) -> None:
+        """✨ 完成 V皮 callback（用 cached concept）。"""
+        if self._on_finish_from_concept is None:
+            return
+        _log.info("Finish from cached concept")
+        self.set_busy(True)
+        self._on_finish_from_concept()
 
     def _on_language_changed(self, _idx: int) -> None:
         lang = self._lang_combo.currentData()

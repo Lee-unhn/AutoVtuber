@@ -204,6 +204,103 @@ def main() -> int:
         _job_threads.append(thread)
         thread.start()
 
+    # ----- MVP4-α R2: 拆兩段流程 ----- #
+    # 共享 ConceptWorker 實例（保留 last_concept 供 finish 階段用）
+    from .workers.concept_worker import ConceptWorker, FullFromConceptWorker
+    from .workers.signals import make_concept_signals
+    _concept_worker_holder = {"worker": None}  # mutable holder
+
+    def _on_preview_concept(spec: JobSpec) -> None:
+        """🎨 預覽概念圖：跑 ConceptWorker (Stage 1+2)。"""
+        from PySide6.QtCore import QThread
+        from PySide6.QtWidgets import QMessageBox
+        if prompt_builder is None or not prompt_builder.health_check():
+            QMessageBox.warning(None, "Ollama 未連線", "請先啟動 Ollama 再試。")
+            return
+        win.set_busy(True)
+        log.info("Concept preview job {} → starting ConceptWorker", spec.job_id)
+        c_signals = make_concept_signals()
+        worker = ConceptWorker(orchestrator, c_signals)
+        _concept_worker_holder["worker"] = worker  # 保留供 finish 階段取 last_concept
+        thread = QThread()
+        thread.started.connect(lambda: (worker.run(spec), thread.quit()))
+
+        def _on_concept_ready(image_path: str, persona_path: str, jid: str) -> None:
+            QMessageBox.information(
+                None, "🎨 概念圖完成",
+                f"SDXL 概念圖已生成！\n\n圖片：{image_path}\n人設：{persona_path}\n\n"
+                f"滿意 → 點「✨ 完成 V皮」組裝 .vrm（~30 秒）\n"
+                f"不滿意 → 微調表單再點「🎨 預覽概念圖」",
+            )
+            try:
+                win.load_concept_in_preview(image_path)
+            except Exception as ex:
+                log.warning("concept preview load failed: {}", ex)
+            win.set_busy(False)
+            win.set_concept_ready(True)
+
+        def _on_concept_failed(msg: str) -> None:
+            QMessageBox.critical(None, "概念圖生成失敗", msg)
+            win.set_busy(False)
+            win.set_concept_ready(False)
+
+        c_signals.concept_ready.connect(_on_concept_ready)
+        c_signals.concept_failed.connect(_on_concept_failed)
+        thread.finished.connect(thread.deleteLater)
+        _job_threads.append(thread)
+        thread.start()
+
+    def _on_finish_from_concept() -> None:
+        """✨ 完成 V皮：用 cached concept 跑 Stage 2.5+3。"""
+        from PySide6.QtCore import QThread
+        from PySide6.QtWidgets import QMessageBox
+
+        worker_holder = _concept_worker_holder["worker"]
+        if worker_holder is None or worker_holder.last_concept is None:
+            QMessageBox.warning(None, "尚未有概念圖", "請先點「🎨 預覽概念圖」")
+            return
+
+        win.set_busy(True)
+        concept = worker_holder.last_concept
+        log.info("Finish from concept job {} → FullFromConceptWorker", concept.spec.job_id)
+        signals = make_job_signals()
+        worker = FullFromConceptWorker(orchestrator, signals)
+        thread = QThread()
+        thread.started.connect(lambda: (worker.run(concept), thread.quit()))
+
+        def _on_full_finished(result_json: str) -> None:
+            import json as _json
+            try:
+                data = _json.loads(result_json)
+                vrm_path = data.get("output_vrm_path")
+            except Exception:
+                vrm_path = None
+            QMessageBox.information(
+                None, "✨ V皮 完成",
+                f"VRM 已建立！\n\n輸出：{vrm_path}\n\n用 VSeeFace 載入即可動。",
+            )
+            if vrm_path:
+                try:
+                    win.load_vrm_in_preview(vrm_path)
+                except Exception:
+                    pass
+            try:
+                win.refresh_library()
+            except Exception:
+                pass
+            win.set_busy(False)
+            win.set_concept_ready(False)  # 用完歸零，避免重複組同個 concept
+
+        def _on_full_failed(msg: str) -> None:
+            QMessageBox.critical(None, "V皮 組裝失敗", msg)
+            win.set_busy(False)
+
+        signals.job_finished.connect(_on_full_finished)
+        signals.job_failed.connect(_on_full_failed)
+        thread.finished.connect(thread.deleteLater)
+        _job_threads.append(thread)
+        thread.start()
+
     # 6.5 First-run check：若沒 setup_complete.flag → 跳 SetupWizard
     if not paths.setup_flag.exists():
         log.info("setup_complete.flag missing → launching first-run setup wizard")
@@ -223,6 +320,8 @@ def main() -> int:
         monitor_signals,
         on_emergency_stop=_on_emergency_stop,
         on_submit_job=_on_submit_job,
+        on_preview_concept=_on_preview_concept,
+        on_finish_from_concept=_on_finish_from_concept,
     )
     win.show()
 

@@ -57,6 +57,21 @@ def make_download_signals():
     return DownloadSignals()
 
 
+def make_concept_signals():
+    """ConceptWorker 用的 signals：Stage 1+2 進度 + 概念圖路徑。"""
+    from PySide6.QtCore import QObject, Signal
+
+    class ConceptSignals(QObject):
+        # (stage_name, current_step, total_steps)
+        concept_progress = Signal(str, int, int)
+        # (concept_image_path, persona_md_path, job_id)
+        concept_ready = Signal(str, str, str)
+        # error message
+        concept_failed = Signal(str)
+
+    return ConceptSignals()
+
+
 def make_face_tracker_signals():
     """FaceTrackerWorker 用的 signals：webcam frame + blendshape weights。"""
     from PySide6.QtCore import QObject, Signal
