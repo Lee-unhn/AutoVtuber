@@ -72,7 +72,7 @@ def test_check_all_resources_with_empty_paths_returns_all_missing(tmp_path: Path
     # mock Ollama 不可達 → unknown
     with patch("requests.get") as mock_get:
         mock_get.side_effect = Exception("connection refused")
-        result = check_all_resources(paths)
+        result = check_all_resources(paths, include_restricted_sample_bases=True)
 
     # 11 項
     assert len(result.items) == 11
@@ -104,7 +104,7 @@ def test_check_detects_existing_sdxl(tmp_path: Path):
 
     with patch("requests.get") as mock_get:
         mock_get.side_effect = Exception()
-        result = check_all_resources(paths)
+        result = check_all_resources(paths, include_restricted_sample_bases=True)
 
     sdxl = next(it for it in result.items if it.key == "sdxl_animagine")
     assert sdxl.state == ResourceState.READY
@@ -118,11 +118,23 @@ def test_check_detects_existing_base_vrm(tmp_path: Path):
 
     with patch("requests.get") as mock_get:
         mock_get.side_effect = Exception()
-        result = check_all_resources(paths)
+        result = check_all_resources(paths, include_restricted_sample_bases=True)
 
     base_a = next(it for it in result.items if it.key == "base_vrm_a")
     assert base_a.state == ResourceState.READY
     assert base_a.actual_size_mb >= 13
+
+
+def test_product_mode_omits_restricted_sample_base_downloads(tmp_path: Path):
+    paths = make_paths(tmp_path)
+    with patch("requests.get") as mock_get:
+        mock_get.side_effect = Exception()
+        result = check_all_resources(paths, include_restricted_sample_bases=False)
+
+    assert not [item for item in result.items if item.key.startswith("base_vrm_")]
+    authorized = next(item for item in result.items if item.key == "authorized_base_vrm")
+    assert authorized.state == ResourceState.UNKNOWN
+    assert result.all_ready is False
 
 
 def test_check_detects_ollama_models_when_reachable(tmp_path: Path):
@@ -139,7 +151,7 @@ def test_check_detects_ollama_models_when_reachable(tmp_path: Path):
         ]
     }
     with patch("requests.get", return_value=fake_response):
-        result = check_all_resources(paths)
+        result = check_all_resources(paths, include_restricted_sample_bases=True)
 
     gemma = next(it for it in result.items if it.key == "ollama_gemma4_e2b")
     qwen = next(it for it in result.items if it.key == "ollama_qwen2.5_3b")
@@ -154,7 +166,7 @@ def test_check_ollama_missing_when_model_not_pulled(tmp_path: Path):
     fake_response.raise_for_status = MagicMock()
     fake_response.json.return_value = {"models": []}  # 空列表
     with patch("requests.get", return_value=fake_response):
-        result = check_all_resources(paths)
+        result = check_all_resources(paths, include_restricted_sample_bases=True)
 
     gemma = next(it for it in result.items if it.key == "ollama_gemma4_e2b")
     assert gemma.state == ResourceState.MISSING
@@ -167,7 +179,11 @@ def test_progress_callback_invoked(tmp_path: Path):
 
     with patch("requests.get") as mock_get:
         mock_get.side_effect = Exception()
-        check_all_resources(paths, progress_cb=lambda name: calls.append(name))
+        check_all_resources(
+            paths,
+            progress_cb=lambda name: calls.append(name),
+            include_restricted_sample_bases=True,
+        )
 
     # 至少 8 個 step（11 項中部分共用 step name）
     assert len(calls) >= 7

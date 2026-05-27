@@ -233,6 +233,15 @@ def _detect_base_vrm(paths: Paths, sample_id: str) -> ResourceStatus:
     )
 
 
+def _authorized_base_required() -> ResourceStatus:
+    return ResourceStatus(
+        key="authorized_base_vrm",
+        display_name="Authorized product base VRM",
+        state=ResourceState.UNKNOWN,
+        detail="Provide an owned or separately authorized VRM 0.x base and register its AtlasMap/license policy.",
+    )
+
+
 # ---------------- 主入口 ---------------- #
 
 
@@ -240,6 +249,7 @@ def check_all_resources(
     paths: Paths,
     ollama_base_url: str = "http://localhost:11434",
     progress_cb: Callable[[str], None] | None = None,
+    include_restricted_sample_bases: bool = False,
 ) -> ResourceCheck:
     """偵測所有資源，回傳 ResourceCheck。
 
@@ -281,8 +291,12 @@ def check_all_resources(
     _step("Ollama qwen2.5:3b")
     items.append(_detect_ollama_model("qwen2.5:3b", "Ollama qwen2.5:3b (Persona)", ollama_base_url))
 
-    _step("Base VRM A/B/C")
-    for sid in ("A", "B", "C"):
-        items.append(_detect_base_vrm(paths, sid))
+    if include_restricted_sample_bases:
+        _step("Base VRM A/B/C (legacy validation only)")
+        for sid in ("A", "B", "C"):
+            items.append(_detect_base_vrm(paths, sid))
+    else:
+        _step("Authorized product base VRM")
+        items.append(_authorized_base_required())
 
     return ResourceCheck(items=items)

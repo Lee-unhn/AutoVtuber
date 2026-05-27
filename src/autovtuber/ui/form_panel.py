@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
+from ..config.asset_policy import selectable_base_models
 from ..pipeline.job_spec import (
     EyeShape,
     FormInput,
@@ -50,14 +51,6 @@ STYLE_LABELS = {
     StyleGenre.SEMI_REALISTIC: "半寫實",
 }
 
-# Base VRM 模型清單（含中文描述 + 性別 + 風格簡述）
-BASE_MODEL_OPTIONS = [
-    ("AvatarSample_A", "👩 樣本 A — 女性 / 標準臉型（預設推薦）"),
-    ("AvatarSample_B", "👩 樣本 B — 女性 / 不同五官（替代風格）"),
-    ("AvatarSample_C", "👨 樣本 C — 男性 / 較高身形"),
-]
-
-
 class FormPanel:
     """組合多個 widget 的表單；提供 to_form_input() 取出 FormInput。"""
 
@@ -67,6 +60,8 @@ class FormPanel:
         on_submit: Callable[[FormInput], None] | None = None,
         on_preview_concept: Callable[[FormInput], None] | None = None,
         on_finish_from_concept: Callable[[], None] | None = None,
+        commercial_mode: bool = False,
+        allow_restricted_samples_for_validation: bool = False,
     ):
         from PySide6.QtCore import Qt
         from PySide6.QtWidgets import (
@@ -87,6 +82,7 @@ class FormPanel:
         self._on_finish_from_concept = on_finish_from_concept
         self._reference_photo_path: str | None = None
         self._file_dialog = QFileDialog
+        self._commercial_mode = commercial_mode
 
         self._widget = QWidget(parent)
         outer = QVBoxLayout(self._widget)
@@ -102,13 +98,29 @@ class FormPanel:
 
         # Base VRM 模型選擇
         self._base_model = QComboBox()
-        for model_id, label in BASE_MODEL_OPTIONS:
-            self._base_model.addItem(label, userData=model_id)
+        base_models = selectable_base_models(
+            commercial_mode,
+            allow_restricted_samples_for_validation,
+        )
+        for policy in base_models:
+            self._base_model.addItem(policy.display_name, userData=policy.model_id)
+        if not base_models:
+            self._base_model.addItem("無已放行的產品 base model", userData=None)
+            self._base_model.setEnabled(False)
         self._base_model.setToolTip(
             "選擇要使用的 VRoid 基礎角色模型。Stage 3 會把 SDXL 出來的概念色彩\n"
-            "（髮色、眼色、膚色）套到這個 base 模型，產出最終 .vrm。"
+            "（髮色、眼色、膚色）套到這個 base 模型，產出最終 .vrm。\n"
+            "AvatarSample 僅保留作既有研究驗證，不可作角色建立產品的 base。"
         )
         form.addRow("基礎模型", self._base_model)
+        if not base_models:
+            policy_notice = QLabel(
+                "目前沒有已核准的產品 base VRM。請先加入自有或已獲准授權的 VRM 0.x base；"
+                "AvatarSample 僅可在明確開啟 legacy validation 設定時重現舊測試。"
+            )
+            policy_notice.setWordWrap(True)
+            policy_notice.setStyleSheet("color:#ffb74d;")
+            form.addRow("資產限制", policy_notice)
 
         # 髮色
         self._hair_color = HexColorPicker("髮色", initial_hex="#5B3A29")
@@ -190,6 +202,9 @@ class FormPanel:
         self._generate_btn.clicked.connect(self._submit)
         finish_row.addWidget(self._generate_btn)
         outer.addLayout(finish_row)
+        if not base_models:
+            self._preview_btn.setEnabled(False)
+            self._generate_btn.setEnabled(False)
 
     @property
     def widget(self):
@@ -213,6 +228,9 @@ class FormPanel:
         )
 
     def to_form_input(self) -> FormInput:
+        model_id = self._base_model.currentData()
+        if not model_id:
+            raise ValueError("目前沒有可用於角色生成的已授權 base model。")
         return FormInput(
             nickname=self._nickname.text().strip() or "無名",
             hair_color_hex=self._hair_color.hex_value,
@@ -224,13 +242,14 @@ class FormPanel:
             personality=self._personality.value,
             extra_freeform=self._extra.toPlainText().strip(),
             reference_photo_path=self._reference_photo_path,
-            base_model_id=self._base_model.currentData() or "AvatarSample_A",
+            base_model_id=model_id,
         )
 
     def set_busy(self, busy: bool) -> None:
         """進行中時所有提交按鈕一起 disabled。"""
-        self._generate_btn.setEnabled(not busy)
-        self._preview_btn.setEnabled(not busy)
+        can_generate = bool(self._base_model.currentData())
+        self._generate_btn.setEnabled(not busy and can_generate)
+        self._preview_btn.setEnabled(not busy and can_generate)
         # 完成按鈕需要有 concept 才啟用；busy=True 一律 disable，busy=False 維持原狀
         if busy:
             self._finish_btn.setEnabled(False)

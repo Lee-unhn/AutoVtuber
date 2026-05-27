@@ -44,5 +44,10 @@ poll_interval_seconds = 1.0
 cuda_memory_fraction = 0.92
 
 [commercial]
-# 勾選後 UI 隱藏「商用授權未確認」的模型/資產
+# 啟用後 UI 與 pipeline 僅接受已放行商業用途的 base model
 mode = false
+
+[assets]
+# VRoid AvatarSample A/B/C 僅用於重現既有結構測試，官方禁止用於角色建立服務。
+# 只在本機驗證舊輸出時短暫設為 true；產品生成保持 false。
+allow_restricted_samples_for_validation = false

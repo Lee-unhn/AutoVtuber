@@ -62,7 +62,7 @@ def main() -> int:
 
     print("[2/5] Starting HardwareGuard + ModelLoader...")
     thresholds = Thresholds.from_settings(settings.safety)
-    with HardwareGuard(thresholds) as guard:
+    with HardwareGuard(thresholds, poll_root_path=paths.output) as guard:
         loader = ModelLoader(guard)
 
         print("[3/5] Constructing pipeline components...")
@@ -79,7 +79,11 @@ def main() -> int:
 
         fg = FaceGenerator(loader, guard, paths.models)
         fa = FaceAligner(paths.models)
-        va = VRMAssembler(paths.base_models, paths.models)
+        va = VRMAssembler(
+            paths.base_models,
+            paths.models,
+            allow_restricted_samples_for_validation=True,
+        )
         persona = PersonaGenerator()
         i23 = ImageTo3D(loader, guard, paths.models, mc_resolution=128)
         mf = MeshFitter(mode="tint", tint_strength=0.5)

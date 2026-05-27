@@ -1,7 +1,7 @@
 # MVP3 規劃 — AutoVtuber
 
 > 寫於 2026-04-27（MVP1+MVP2 全部完成、Evidence Collector 8.5/10 PASS 之後）
-> **狀態：✅ 全部 6 項完成（2026-04-27 Session 5）— pytest 99 全綠 + 推到 GitHub**
+> **狀態：功能程式碼已完成（2026-04-27 Session 5）；Windows 打包、合法 base 與實機驗收仍依 `docs/RELEASE_READINESS.md` 收尾。**
 
 ---
 
@@ -15,7 +15,7 @@
 | M3-4 多 base | 2-3h | 1h | ✅ |
 | M3-5 Preset 系統 | 3-4h | 2h | ✅ |
 | M3-6 PyInstaller | 4-8h | 1h（spec + docs，未實機跑 build）| ✅ |
-| **合計** | **24-38h** | **~14h** | **PASS** |
+| **合計** | **24-38h** | **~14h** | **功能已實作；release validation pending** |
 
 **測試**：pytest 69 → 99 全綠（+30 測試）
 **GitHub**：8 commits pushed to `https://github.com/Lee-unhn/AutoVtuber` (private)

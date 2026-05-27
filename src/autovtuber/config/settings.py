@@ -81,6 +81,10 @@ class CommercialSettings(BaseModel):
     mode: bool = False
 
 
+class AssetSettings(BaseModel):
+    allow_restricted_samples_for_validation: bool = False
+
+
 class Settings(BaseModel):
     """整合的設定物件。"""
 
@@ -90,6 +94,7 @@ class Settings(BaseModel):
     generation: GenerationSettings = Field(default_factory=GenerationSettings)
     safety: SafetySettings = Field(default_factory=SafetySettings)
     commercial: CommercialSettings = Field(default_factory=CommercialSettings)
+    assets: AssetSettings = Field(default_factory=AssetSettings)
 
 
 # ---------------- 載入函式 ---------------- #

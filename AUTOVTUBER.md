@@ -56,7 +56,7 @@
 
 ### 3D / VRM 處理
 - **trimesh** + **pygltflib** — glTF/VRM 檔案讀寫
-- **VRoid 開源 base 模型**（CC0 授權）— 作為骨架/blendshape 基底
+- **VRoid AvatarSample base 模型**（legacy 本機驗證用途，禁止作產品角色建立服務 base）— 發佈前須替換為自有或另行獲准授權的 VRM 0.x base
 - **OpenCV** — UV 貼圖貼合（把 AI 生成臉部對齊到 base 模型 UV）
 - **QtQuick3D** — 即時 3D 預覽
 
@@ -146,7 +146,7 @@ G:\claude專案資料夾\AutoVtuber\
 │       ├── model_loader.py    # 統一模型載入 + VRAM 管理
 │       └── vrm_io.py          # VRM 讀寫工具
 ├── assets\
-│   ├── base_models\           # VRoid CC0 base VRM 範本（多種體型）
+│   ├── base_models\           # legacy 驗證素材；產品版須換成合規 VRM 0.x base
 │   ├── lora\                  # AnimagineXL 等 LoRA 權重
 │   └── ui\                    # icons, fonts
 ├── models\                    # AI 模型權重（首次下載 ~10 GB）
@@ -246,7 +246,7 @@ G:\claude專案資料夾\AutoVtuber\
   - VRoid base 模型 — 只挑 CC0 / VRoid Hub 「商用可」標記者
   - IP-Adapter — Apache 2.0
   - MediaPipe — Apache 2.0
-- **商用切換開關**：UI 設定可勾「商用模式」，自動隱藏未確認商用的模型選項
+- **資產放行防線**：預設與商用模式都由 UI 及 pipeline 阻擋未放行的 base 模型；目前 AvatarSample A/B/C 均只可在明確開啟 legacy validation 時重現舊測試
 
 ### A4. 自動下載模型 + 進度條
 - 首次啟動跑「Setup Wizard」：
@@ -385,7 +385,7 @@ G:\claude專案資料夾\AutoVtuber\
 |---|---|---|
 | **MVP1（重新定義）** | 表單 → LLM prompt + persona → SDXL 2D concept → VRM with hair/eye recolor + persona.md | **100% ✅**（2026-04-26 session 3 補完 persona）|
 | **MVP2** | + Image-to-3D（TripoSR）→ 3D character mesh → fit to VRoid → 真實臉部對齊 VRM | **100% ✅** 端對端 488s 全綠（Stage 1+2+2.5+3 全跑通）+ Evidence Collector 5 輪 audit 從 1→2.5→4.5→7.5→**8.5/10 PASS**。剩 VSeeFace 肉眼最終驗收（30 分鐘 user 端工作）|
-| **MVP3** | + Setup wizard / Webcam tracker / Multi-base / Preset import-export / Reference photo / PyInstaller | **100% ✅**（M3-1..M3-6 全部完成，pytest 99/99 全綠）|
+| **MVP3 功能程式碼** | + Setup wizard / Webcam tracker / Multi-base / Preset import-export / Reference photo / PyInstaller spec | **已實作 ✅**（Windows 打包與最終實機驗收仍 pending，見 `docs/RELEASE_READINESS.md`）|
 | ~~舊~~ MVP1 face_baker | **2D fallback**（保留供無 3D 模型時用）| 80%（v3 待 VSeeFace 驗證 — 可能仍偏，最多當「概念貼合」）|
 
 ### 技術債（標記）

@@ -120,7 +120,11 @@ form = FormInput(
     extra_freeform='quality gate test',
     base_model_id='AvatarSample_A',
 )
-assembler = VRMAssembler(root / 'assets/base_models', root / 'models')
+assembler = VRMAssembler(
+    root / 'assets/base_models',
+    root / 'models',
+    allow_restricted_samples_for_validation=True,
+)
 result = assembler.assemble(form=form, sdxl_face_image=concept, output_path=out, tsr_mesh=None, mesh_fitter=None)
 report = VtuberQualityGate().validate_path(result)
 print(result)

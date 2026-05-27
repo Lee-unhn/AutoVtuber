@@ -3,10 +3,10 @@
 > 使用者填一張表單 → 5–10 分鐘輸出可直接載入 VSeeFace 的 `.vrm` VTuber 模型。
 > 取代傳統 20–100 小時的 Live2D 繪製 + 綁定流程。
 
-[![pytest](https://img.shields.io/badge/pytest-139%2F139_passing-brightgreen)](#測試)
+[![pytest](https://img.shields.io/badge/pytest-150_passing%2C_1_headless_skip-brightgreen)](#測試)
 [![python](https://img.shields.io/badge/python-3.12-blue)](#環境需求)
-[![license](https://img.shields.io/badge/license-MIT-blue)](#授權)
-[![status](https://img.shields.io/badge/MVP1+2+3+4α-100%25_complete-success)](#開發狀態)
+[![license](https://img.shields.io/badge/license-review_required-orange)](#授權)
+[![status](https://img.shields.io/badge/status-beta_validation-orange)](#開發狀態)
 
 ---
 
@@ -20,6 +20,9 @@
 | .vrm 輸出 | VRM 0.x，VSeeFace 直接載入，含 hair/eye recolor + skin tone tint |
 
 > ⏱ **實機跑時**：RTX 3060 12GB / Ryzen 7 / 16GB RAM，從表單按下 ✨ 到 `.vrm` 落地約 **8 分鐘**（USB HDD 拖慢，NVMe 預估 4 分鐘）。
+>
+> ⚠️ **發佈狀態**：角色生成與 VRM quality gate 已完成 Beta 驗證；公開或商業發佈仍受 base VRM 授權替換、Windows 打包與 Warudo/VSeeFace 最終實機驗收阻擋。進度見 `docs/RELEASE_READINESS.md`。
+> 預設設定現已停用 AvatarSample A/B/C 角色生成；舊成果重現僅可在理解其限制後以 `assets.allow_restricted_samples_for_validation = true` 手動啟用。
 
 ---
 
@@ -230,7 +233,7 @@ autovtuber/
 │   ├── config/         # settings (TOML) + paths + manifest
 │   ├── utils/          # logging / timing / path_helpers
 │   └── main.py         # python -m autovtuber 入口
-├── tests/              # pytest 139 件全綠
+├── tests/              # pytest 150 passing + 1 headless-only skip（2026-05-27）
 ├── scripts/            # smoke_test_e2e / smoke_test_triposr / smoke_test_mesh_fitter / render_mesh_preview
 ├── external/TripoSR/   # vendored (gitignored — clone via setup wizard)
 ├── assets/base_models/ # 3 個 VRoid 樣本 (gitignored)
@@ -309,7 +312,7 @@ python scripts\smoke_test_e2e.py
 ## 🧪 測試
 
 ```powershell
-pytest                # 139 件全綠
+pytest                # 150 passed, 1 headless-only skip（macOS 無 OpenGL context）
 pytest -v -k tint     # 只跑 MeshFitter tint mode 測試
 ```
 
@@ -326,7 +329,8 @@ pytest -v -k tint     # 只跑 MeshFitter tint mode 測試
 |---|---|---|
 | MVP1 | 表單 → SDXL → VRoid recolor → .vrm | ✅ 100%（含 persona）|
 | MVP2 | + Image-to-3D + Mesh fit → VRM with skin tint | ✅ 100%（Evidence Collector 8.5/10 PASS）|
-| MVP3 | + Setup Wizard / Webcam tracker / Multi-base / Preset import-export / Reference photo / PyInstaller | ✅ 100%（M3-1..M3-6 全部完成，規劃見 `docs/MVP3_PLAN.md` / 打包見 `docs/BUILDING.md`）|
+| MVP3 程式功能 | + Setup Wizard / Webcam tracker / Multi-base / Preset import-export / Reference photo / PyInstaller spec | ✅ 已實作（規劃見 `docs/MVP3_PLAN.md`）|
+| Release validation | 授權合法 base / Windows `.exe` 實機 build / Warudo 或 VSeeFace 驗收 | 🚧 尚未完成（見 `docs/RELEASE_READINESS.md`）|
 
 ---
 
@@ -357,10 +361,10 @@ AutoVtuber 的 quality gate 契約（**54 humanoid bones / 67 blendshape clips /
 
 ## 📝 授權
 
-- 程式碼：MIT License
+- 程式碼：目前以 `pyproject.toml` 的待商業化決策狀態為準；正式發佈前需由專案所有者確定授權並加入對應 LICENSE
 - TripoSR：MIT（VAST-AI-Research / stabilityai）
 - AnimagineXL 4.0：fair-ai-public-license
-- AvatarSample VRM：CC0（madjin/vrm-samples 子集）
+- AvatarSample A/B/C：VRoid sample model 條款；僅保留既有研究驗證，不可作本產品角色建立服務的發佈 base
 - rembg：MIT
 - 詳見 `docs/LICENSES.md`
 

@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 from PIL import Image
 
+from ..config.asset_policy import assert_base_model_allowed
 from ..utils.logging_setup import get_logger
 from ..vrm.texture_atlas import AtlasMap
 from ..vrm.vrm_io import VRMFile
@@ -31,10 +32,20 @@ _log = get_logger(__name__)
 class VRMAssembler:
     """把生成的臉部圖 + 表單顏色，組合進 base VRM。"""
 
-    def __init__(self, base_models_dir: Path, models_dir: Path):
+    def __init__(
+        self,
+        base_models_dir: Path,
+        models_dir: Path,
+        commercial_mode: bool = False,
+        allow_restricted_samples_for_validation: bool = False,
+    ):
         """`base_models_dir` 是 assets/base_models/，`models_dir` 是 models/（給 InsightFace 用）。"""
         self._base_models_dir = Path(base_models_dir)
         self._models_dir = Path(models_dir)
+        self._commercial_mode = commercial_mode
+        self._allow_restricted_samples_for_validation = (
+            allow_restricted_samples_for_validation and not commercial_mode
+        )
 
     def assemble(
         self,
@@ -58,6 +69,11 @@ class VRMAssembler:
             MVP2: 改用 MeshFitter tint mode（LAB chroma-only shift）— 經 Evidence
                   Collector 4 輪 audit 確認商用品質 PASS（7.5/10）
         """
+        assert_base_model_allowed(
+            form.base_model_id,
+            self._commercial_mode,
+            self._allow_restricted_samples_for_validation,
+        )
         base_vrm_path = self._base_models_dir / f"{form.base_model_id}.vrm"
         if not base_vrm_path.exists():
             raise FileNotFoundError(
