@@ -353,6 +353,8 @@ AutoVtuber 是 **VRM 角色生成器**。以下是消費這個 `.vrm` 產物的�
 
 AutoVtuber 的 quality gate 契約（**54 humanoid bones / 67 blendshape clips / 52 ARKit/Perfect Sync clips / 3 skinned meshes / 560 morph targets**）正是 VDrama 演出層所需的最低介面：54 bones 給 Mixamo 動作重定向、52 ARKit clips 給 Azure Viseme 口型同步、67 blendshape clips 給情緒表演。
 
+兩個專案維持獨立程式碼與執行環境，不直接 import 或 vendor 對方模組；角色交付規格、驗收結果與阻塞回饋以 Markdown 文件交換。詳見 [`docs/VDRAMA_MARKDOWN_HANDOFF.md`](docs/VDRAMA_MARKDOWN_HANDOFF.md)。
+
 ---
 
 ## 📝 授權
@@ -360,7 +362,7 @@ AutoVtuber 的 quality gate 契約（**54 humanoid bones / 67 blendshape clips /
 - 程式碼：MIT License
 - TripoSR：MIT（VAST-AI-Research / stabilityai）
 - AnimagineXL 4.0：fair-ai-public-license
-- AvatarSample VRM：CC0（madjin/vrm-samples 子集）
+- AvatarSample VRM：授權狀態依 `docs/LICENSES.md` 確認；商業輸出前必須完成清理與標註
 - rembg：MIT
 - 詳見 `docs/LICENSES.md`
 
