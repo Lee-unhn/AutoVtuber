@@ -3,7 +3,7 @@
 > 使用者填一張表單 → 5–10 分鐘輸出可直接載入 VSeeFace 的 `.vrm` VTuber 模型。
 > 取代傳統 20–100 小時的 Live2D 繪製 + 綁定流程。
 
-[![pytest](https://img.shields.io/badge/pytest-150_passing%2C_1_headless_skip-brightgreen)](#測試)
+[![pytest](https://img.shields.io/badge/pytest-154_passing%2C_1_headless_skip-brightgreen)](#測試)
 [![python](https://img.shields.io/badge/python-3.12-blue)](#環境需求)
 [![license](https://img.shields.io/badge/license-review_required-orange)](#授權)
 [![status](https://img.shields.io/badge/status-beta_validation-orange)](#開發狀態)
@@ -23,6 +23,7 @@
 >
 > ⚠️ **發佈狀態**：角色生成與 VRM quality gate 已完成 Beta 驗證；公開或商業發佈仍受 base VRM 授權替換、Windows 打包與 Warudo/VSeeFace 最終實機驗收阻擋。進度見 `docs/RELEASE_READINESS.md`。
 > 預設設定現已停用 AvatarSample A/B/C 角色生成；舊成果重現僅可在理解其限制後以 `assets.allow_restricted_samples_for_validation = true` 手動啟用。
+> 自有或另行獲准的 VRM 0.x 底模可依 [`docs/AUTHORIZED_BASE_IMPORT.md`](docs/AUTHORIZED_BASE_IMPORT.md) 註冊後使用。
 
 ---
 
@@ -190,7 +191,7 @@
 | **M3-1** Setup Wizard | `setup/resource_check.py` 11 項偵測 + `setup/downloader.py` 多來源 dispatch (HF/git/Ollama) + 重寫 `ui/setup_wizard.py` 5 頁 + `main.py` first-run check | ✅ |
 | **M3-2** Webcam Tracker | `pipeline/face_tracker.py` 478 點 → 12 個 VRM blendshape (Joy/Angry/Sorrow/Fun/A/I/U/E/O/Blink) + `workers/face_tracker_worker.py` cv2+mediapipe QThread + `ui/face_tracker_dialog.py` 即時 progress bar | ✅ |
 | **M3-3** Reference Photo | 確認 wiring 完整 + 改善 IP-Adapter 缺檔警告 + 3 個 wiring 測試 | ✅ |
-| **M3-4** Multi-base 選單 | `form_panel.py` 加 base 選單（A/B/C 男女）+ tooltip | ✅ |
+| **M3-4** Multi-base 選單 | `form_panel.py` 加 base 選單；AvatarSample A/B/C 僅作 legacy 驗證，產品使用註冊的合法底模 | ✅ |
 | **M3-5** Preset Import/Export | `PresetStore` 加 import_preset/export_preset + `LibraryPanel` 按鈕 + 11 個測試 | ✅ |
 | **M3-6** PyInstaller 打包 | `autovtuber.spec` --onedir + `docs/BUILDING.md` 含已知陷阱表 | ✅ |
 
@@ -199,7 +200,7 @@
 新功能展示：
 - 第一次啟動自動跳 Setup Wizard 一鍵下載 12 GB 模型
 - 點 top bar **「👁️ 臉部追蹤」** → webcam dialog 看 12 個 blendshape weight 即時 progress bar
-- 表單可選 base 模型（女 A / 女 B / 男 C）
+- 表單可選已註冊且通過權利確認的產品 base；legacy validation 模式可重現 A/B/C 測試
 - 角色庫 📤 匯出 / 📦 匯入 跨機器分享角色設定
 
 ---
@@ -233,10 +234,10 @@ autovtuber/
 │   ├── config/         # settings (TOML) + paths + manifest
 │   ├── utils/          # logging / timing / path_helpers
 │   └── main.py         # python -m autovtuber 入口
-├── tests/              # pytest 150 passing + 1 headless-only skip（2026-05-27）
-├── scripts/            # smoke_test_e2e / smoke_test_triposr / smoke_test_mesh_fitter / render_mesh_preview
+├── tests/              # pytest 154 passing + 1 headless-only skip（2026-05-27）
+├── scripts/            # smoke tests / preview rendering / authorized base registration
 ├── external/TripoSR/   # vendored (gitignored — clone via setup wizard)
-├── assets/base_models/ # 3 個 VRoid 樣本 (gitignored)
+├── assets/base_models/ # 本機 VRM + 權利註冊表 (gitignored)
 ├── docs/               # architecture / HARDWARE_PROTOCOL / LICENSES / images/...
 └── AUTOVTUBER.md       # 主規格文件（含完整異動紀錄）
 ```
@@ -312,7 +313,7 @@ python scripts\smoke_test_e2e.py
 ## 🧪 測試
 
 ```powershell
-pytest                # 150 passed, 1 headless-only skip（macOS 無 OpenGL context）
+pytest                # 154 passed, 1 headless-only skip（macOS 無 OpenGL context）
 pytest -v -k tint     # 只跑 MeshFitter tint mode 測試
 ```
 

@@ -15,6 +15,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Callable
 
+from ..config.asset_policy import approved_base_models
 from ..config.paths import Paths
 from ..utils.logging_setup import get_logger
 
@@ -242,6 +243,19 @@ def _authorized_base_required() -> ResourceStatus:
     )
 
 
+def _detect_authorized_base(paths: Paths) -> ResourceStatus:
+    approved = approved_base_models(paths.base_models)
+    if not approved:
+        return _authorized_base_required()
+    names = ", ".join(policy.display_name for policy in approved)
+    return ResourceStatus(
+        key="authorized_base_vrm",
+        display_name="Authorized product base VRM",
+        state=ResourceState.READY,
+        detail=f"Approved local base models: {names}",
+    )
+
+
 # ---------------- 主入口 ---------------- #
 
 
@@ -297,6 +311,6 @@ def check_all_resources(
             items.append(_detect_base_vrm(paths, sid))
     else:
         _step("Authorized product base VRM")
-        items.append(_authorized_base_required())
+        items.append(_detect_authorized_base(paths))
 
     return ResourceCheck(items=items)

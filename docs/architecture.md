@@ -34,7 +34,7 @@ flowchart TB
     end
 
     subgraph DATA["📦 資料 / 模型"]
-        BASE_VRM[(assets/base_models/<br/>AvatarSample_A/B/C.vrm<br/>+ face_uv_template_*.json<br/>+ face_uv_mask_*.png)]
+        BASE_VRM[(assets/base_models/<br/>approved product base .vrm<br/>+ legacy AvatarSample validation<br/>+ face_uv_template/mask)]
         SDXL_W[(models/sdxl/<br/>animagine-xl-4.0/ 6.5GB)]
         IPA_W[(models/ip_adapter/<br/>3.3GB ⚠️ 載入失敗 fallback OK)]
         OLLAMA[(Ollama 服務<br/>gemma4:e4b 9.6GB<br/>⚠️ 太大 abort → fallback)]

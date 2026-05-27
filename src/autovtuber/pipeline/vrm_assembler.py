@@ -73,6 +73,7 @@ class VRMAssembler:
             form.base_model_id,
             self._commercial_mode,
             self._allow_restricted_samples_for_validation,
+            self._base_models_dir,
         )
         base_vrm_path = self._base_models_dir / f"{form.base_model_id}.vrm"
         if not base_vrm_path.exists():
@@ -81,7 +82,7 @@ class VRMAssembler:
                 f"Setup wizard 應該下載過；或請手動放置。"
             )
 
-        atlas = AtlasMap.for_base_model(form.base_model_id)
+        atlas = AtlasMap.for_base_model(form.base_model_id, self._base_models_dir)
         vrm = VRMFile.load(base_vrm_path)
         _log.info("Base VRM loaded: {} (vrm version {})", base_vrm_path.name, vrm.vrm_version)
 

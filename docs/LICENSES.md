@@ -35,6 +35,7 @@
 > - 因此 AutoVtuber 發佈版本必須改用專案所有者自製或另行取得授權、且相容 VRM 0.x 的 base model。
 >
 > 目前沒有已內建且通過產品發佈審查的 base VRM。預設生成將保持阻擋，直到加入合規 base；既有研究測試可明確設定 `assets.allow_restricted_samples_for_validation=true` 後重現，且不得作產品輸出。
+> 自有或另行獲准的 VRM 0.x 可使用 [`AUTHORIZED_BASE_IMPORT.md`](./AUTHORIZED_BASE_IMPORT.md) 的本機註冊流程加入；註冊表不代表法律審查替代品，授權證據仍須由所有者保存。
 
 ---
 

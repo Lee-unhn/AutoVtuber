@@ -1,6 +1,7 @@
 """ResourceCheck 測試 — 用 tmp_path 模擬已就緒 / 缺漏狀態。"""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
@@ -135,6 +136,35 @@ def test_product_mode_omits_restricted_sample_base_downloads(tmp_path: Path):
     authorized = next(item for item in result.items if item.key == "authorized_base_vrm")
     assert authorized.state == ResourceState.UNKNOWN
     assert result.all_ready is False
+
+
+def test_product_mode_accepts_registered_owned_base(tmp_path: Path):
+    paths = make_paths(tmp_path)
+    paths.base_models.mkdir(parents=True)
+    (paths.base_models / "OwnedBase.vrm").write_bytes(b"owned")
+    (paths.base_models / "approved_models.json").write_text(
+        json.dumps(
+            {
+                "models": [
+                    {
+                        "model_id": "OwnedBase",
+                        "display_name": "Owned Base",
+                        "usage_rights_confirmed": True,
+                        "license_reference": "owner record",
+                        "atlas": {"face_skin_index": 0, "hair_index": 1, "eye_iris_index": 2},
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    with patch("requests.get") as mock_get:
+        mock_get.side_effect = Exception()
+        result = check_all_resources(paths, include_restricted_sample_bases=False)
+
+    authorized = next(item for item in result.items if item.key == "authorized_base_vrm")
+    assert authorized.state == ResourceState.READY
+    assert "Owned Base" in authorized.detail
 
 
 def test_check_detects_ollama_models_when_reachable(tmp_path: Path):

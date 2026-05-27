@@ -214,7 +214,7 @@ G:\claude專案資料夾\AutoVtuber\
 | 風險 | 緩解策略 |
 |---|---|
 | AnimagineXL 4.0 在 12GB VRAM 可能 OOM（特別是搭配 ControlNet） | 用 `accelerate` 的 sequential CPU offload；必要時 fallback 到 SDXL Turbo（4 步生成） |
-| 找不到 CC0 授權的 VRoid base 模型 | Plan B：請使用者用 VRoid Studio 自製一個空白 base，AutoVtuber 只做「自動修改」 |
+| 找不到明確授權可供角色建立服務輸出的 VRM base | 請使用者用 VRoid Studio 自製並確認所用素材權利，AutoVtuber 僅在本機登錄後做「自動修改」 |
 | AI 臉部貼到 3D 模型 UV 對不齊 | 用 InsightFace 偵測 5 個人臉特徵點，warpAffine 對齊 base UV 模板 |
 | Ollama 已被 VideoForge 占用 11434 port | AutoVtuber 共用同一個 Ollama 實例（讀取現有配置） |
 | 首次執行需下載 ~10 GB | 加裝安裝精靈，分階段下載 + 進度條；可斷點續傳 |
@@ -243,10 +243,10 @@ G:\claude專案資料夾\AutoVtuber\
 - 模型/資產白名單（首選）：
   - Stable Diffusion XL — CreativeML Open RAIL++-M（商用 OK）
   - AnimagineXL 4.0 — Fair AI Public License 1.0-SD（商用 OK，需保留 attribution）
-  - VRoid base 模型 — 只挑 CC0 / VRoid Hub 「商用可」標記者
+  - VRM base 模型 — 只接受自有或另行獲准、且可追溯授權證據允許角色建立服務輸出的資產
   - IP-Adapter — Apache 2.0
   - MediaPipe — Apache 2.0
-- **資產放行防線**：預設與商用模式都由 UI 及 pipeline 阻擋未放行的 base 模型；目前 AvatarSample A/B/C 均只可在明確開啟 legacy validation 時重現舊測試
+- **資產放行防線**：預設與商用模式都由 UI 及 pipeline 阻擋未放行的 base 模型；目前 AvatarSample A/B/C 均只可在明確開啟 legacy validation 時重現舊測試；自有或另行獲准的 VRM 0.x 可透過 `scripts/register_authorized_base.py` 登錄權利依據與 atlas mapping 後使用
 
 ### A4. 自動下載模型 + 進度條
 - 首次啟動跑「Setup Wizard」：

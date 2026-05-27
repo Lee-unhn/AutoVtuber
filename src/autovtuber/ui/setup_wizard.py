@@ -106,7 +106,7 @@ class SetupWizard:
             "• <b>MediaPipe Face Mesh</b>（Apache 2.0）<br><br>"
             "完整清單見 <code>docs/LICENSES.md</code>"
         ))
-        if not self._allow_restricted_samples_for_validation and not has_commercial_base_model():
+        if not self._allow_restricted_samples_for_validation and not has_commercial_base_model(self._paths.base_models):
             commercial_notice = QLabel(
                 "<br><b>產品 base 尚未就緒：</b>目前未內建已放行的 base VRM。"
                 "生成按鈕會保持停用，直到加入自有或另行獲准授權的 VRM 0.x base。"

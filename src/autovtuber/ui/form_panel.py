@@ -62,6 +62,7 @@ class FormPanel:
         on_finish_from_concept: Callable[[], None] | None = None,
         commercial_mode: bool = False,
         allow_restricted_samples_for_validation: bool = False,
+        base_models_dir: Path | None = None,
     ):
         from PySide6.QtCore import Qt
         from PySide6.QtWidgets import (
@@ -82,8 +83,6 @@ class FormPanel:
         self._on_finish_from_concept = on_finish_from_concept
         self._reference_photo_path: str | None = None
         self._file_dialog = QFileDialog
-        self._commercial_mode = commercial_mode
-
         self._widget = QWidget(parent)
         outer = QVBoxLayout(self._widget)
         outer.setContentsMargins(16, 16, 16, 16)
@@ -101,6 +100,7 @@ class FormPanel:
         base_models = selectable_base_models(
             commercial_mode,
             allow_restricted_samples_for_validation,
+            base_models_dir,
         )
         for policy in base_models:
             self._base_model.addItem(policy.display_name, userData=policy.model_id)

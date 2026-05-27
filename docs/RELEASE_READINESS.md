@@ -10,7 +10,7 @@
 | VRM 組裝與結構品質 | PASS | `VtuberQualityGate`；納入 2026-05-27 全測試重驗 |
 | ARKit / Perfect Sync clips | PASS | 已驗證 52 clips，納入 quality gate |
 | HardwareGuard 磁碟監控路徑 | FIXED | 不再硬寫 `G:\`，主程式與 smoke tests 改為監控實際 `output/` 路徑 |
-| 本機單元測試重驗 | PASS WITH PLATFORM SKIP | 2026-05-27：`150 passed, 1 skipped`；skip 為 macOS headless MediaPipe OpenGL 初始化，留待 Windows GUI 實機驗收 |
+| 本機單元測試重驗 | PASS WITH PLATFORM SKIP | 2026-05-27：`154 passed, 1 skipped`；skip 為 macOS headless MediaPipe OpenGL 初始化，留待 Windows GUI 實機驗收 |
 | GUI / Setup Wizard / Preset / Webcam 程式碼 | IMPLEMENTED | 尚需在 Windows 目標機整合驗收 |
 | Base VRM 發佈授權 | BLOCKED | AvatarSample A/B/C 官方條款禁止用於角色建立服務的產品 base |
 | 程式碼授權標示 | BLOCKED | `pyproject.toml` 保留待定狀態；專案所有者需決定正式 LICENSE |
@@ -23,6 +23,7 @@
 
 - [x] 停止將 AvatarSample A/B/C 描述為 CC0 或可作商業產品 base。
 - [x] 預設與 `commercial.mode=true` 時，UI、Setup Wizard 與 VRM assembly 阻擋未放行 sample base；舊研究重現必須明確開啟 validation 設定。
+- [x] 提供 `scripts/register_authorized_base.py` 與本機 `approved_models.json` 權利註冊流程，合法底模註冊後可被 UI 與 pipeline 識別。
 - [ ] 建立或取得可用於角色建立產品的合法 VRM 0.x base model。
 - [ ] 為新 base 建立 texture atlas mapping、預覽與 license record。
 - [ ] 專案所有者決定程式碼正式授權並加入 LICENSE。
@@ -31,7 +32,7 @@
 
 - [x] 建立 VTuber structural quality gate。
 - [x] 保存六視角與斜角幾何預覽。
-- [x] 在目前可用的 macOS verifier 重跑全測試：`150 passed, 1 skipped`。
+- [x] 在目前可用的 macOS verifier 重跑全測試：`154 passed, 1 skipped`。
 - [ ] 在目標 Windows + NVIDIA 環境重跑完整 test suite。
 - [ ] 使用合法 base 跑一次完整 SDXL -> TripoSR -> VRM e2e 並保存成果。
 
@@ -49,7 +50,7 @@
 
 ## 當前最短路徑
 
-下一個必要輸入不是新增功能，而是**合法可發布的 base VRM**。沒有它，即使 pipeline、`.exe` 與口型功能都完成，也不能把角色生成產品交付出去。
+合法底模的受控匯入機制已完成，操作見 [`AUTHORIZED_BASE_IMPORT.md`](./AUTHORIZED_BASE_IMPORT.md)。下一個必要輸入是**合法可發布的 base VRM 本體及其授權依據**；沒有它，即使 pipeline、`.exe` 與口型功能都完成，也不能把角色生成產品交付出去。
 
 建議來源：
 
