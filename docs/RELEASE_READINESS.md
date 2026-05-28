@@ -17,7 +17,7 @@
 | PyInstaller Windows 成品 | PENDING | 目前僅有 `autovtuber.spec` 與打包文件，未保存實機 build 驗收紀錄 |
 | Warudo / VSeeFace 最終動作驗收 | PENDING | 必須在目標 Windows 電腦載入最終合法 base 產物驗收 |
 | VDrama Markdown 交接 | READY | 已建立 `docs/VDRAMA_MARKDOWN_HANDOFF.md` 與 `handoff/` 交付/回饋模板；另一台電腦只需讀寫 Markdown |
-| Base 準備工具 | READY | 已建立 `scripts/inspect_vrm_atlas.py`、`scripts/register_authorized_base.py` 與 `docs/BASE_VRM_PREP_PACKET.md` |
+| Base 準備工具 | READY | 已建立 `scripts/validate_vrm_base.py`、`scripts/inspect_vrm_atlas.py`、`scripts/register_authorized_base.py` 與 `docs/BASE_VRM_PREP_PACKET.md` |
 
 ## 依重要性執行順序
 
@@ -26,6 +26,7 @@
 - [x] 停止將 AvatarSample A/B/C 描述為 CC0 或可作商業產品 base。
 - [x] 預設與 `commercial.mode=true` 時，UI、Setup Wizard 與 VRM assembly 阻擋未放行 sample base；舊研究重現必須明確開啟 validation 設定。
 - [x] 提供 `scripts/register_authorized_base.py` 與本機 `approved_models.json` 權利註冊流程，合法底模註冊後可被 UI 與 pipeline 識別。
+- [x] 提供 `scripts/validate_vrm_base.py` 檢查候選 VRM 是否具備 VTuber base 結構。
 - [x] 提供 `scripts/inspect_vrm_atlas.py` 產生 atlas index 檢查報告。
 - [ ] 建立或取得可用於角色建立產品的合法 VRM 0.x base model。
 - [ ] 為新 base 建立 texture atlas mapping、預覽與 license record。

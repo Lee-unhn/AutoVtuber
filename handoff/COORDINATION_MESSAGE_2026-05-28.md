@@ -9,8 +9,9 @@ AutoVtuber 這邊已經把跨電腦協作方式正式改成 Markdown 契約，�
 3. `handoff/VDRAMA_FEEDBACK_TEMPLATE.md` 已建立，請 VDrama 測試後照這份回覆。
 4. AutoVtuber 已修正舊文件中 AvatarSample / MIT 的授權誤導；現在以 `docs/LICENSES.md`、`docs/RELEASE_READINESS.md`、`docs/AUTHORIZED_BASE_IMPORT.md` 為準。
 5. AutoVtuber 已有合法 VRM 0.x base 的本機註冊流程：`scripts/register_authorized_base.py`。
-6. AutoVtuber 已新增 atlas 檢查工具：`scripts/inspect_vrm_atlas.py`，可把合法 base 的 texture image index 輸出成 Markdown。
-7. AutoVtuber 目前是基於合法 VRM 0.x base 生成新角色，不是從零建立可動人形骨架、skinning 與 blendshape。
+6. AutoVtuber 已新增 base 技術檢查工具：`scripts/validate_vrm_base.py`，可把候選 VRM 的骨架、表情、mesh/skin 結構輸出成 Markdown。
+7. AutoVtuber 已新增 atlas 檢查工具：`scripts/inspect_vrm_atlas.py`，可把合法 base 的 texture image index 輸出成 Markdown。
+8. AutoVtuber 目前是基於合法 VRM 0.x base 生成新角色，不是從零建立可動人形骨架、skinning 與 blendshape。
 
 ## 請另一台電腦注意
 

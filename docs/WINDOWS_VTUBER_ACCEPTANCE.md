@@ -27,6 +27,7 @@ pytest
 ## 2. 合法 base 檢查
 
 ```powershell
+python scripts\validate_vrm_base.py --source C:\path\to\OwnedBase.vrm --out docs\evidence\OwnedBase_base_validation.md
 python scripts\inspect_vrm_atlas.py --source C:\path\to\OwnedBase.vrm --out docs\evidence\OwnedBase_atlas_inspect.md
 python scripts\register_authorized_base.py --source C:\path\to\OwnedBase.vrm --model-id OwnedBase --display-name "Owned Base" --license-reference docs\evidence\OwnedBase_license.md --face-skin-index <index> --hair-index <index> --eye-iris-index <index> --confirm-rights
 ```

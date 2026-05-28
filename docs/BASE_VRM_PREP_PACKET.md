@@ -35,7 +35,15 @@ AutoVtuber 目前不做的是：
 ## 準備流程
 
 1. 將合法 `.vrm` 放在本機任一位置。
-2. 產生 atlas 檢查報告：
+2. 先做技術可用性檢查：
+
+```bash
+PYTHONPATH=src python scripts/validate_vrm_base.py \
+  --source /path/to/OwnedBase.vrm \
+  --out docs/evidence/OwnedBaseF01_base_validation.md
+```
+
+3. 產生 atlas 檢查報告：
 
 ```bash
 PYTHONPATH=src python scripts/inspect_vrm_atlas.py \
@@ -44,8 +52,8 @@ PYTHONPATH=src python scripts/inspect_vrm_atlas.py \
   --out docs/evidence/OwnedBaseF01_atlas_inspect.md
 ```
 
-3. 打開報告，確認哪幾個 image index 是臉、髮、虹膜、眼白。
-4. 登錄合法 base：
+4. 打開報告，確認哪幾個 image index 是臉、髮、虹膜、眼白。
+5. 登錄合法 base：
 
 ```bash
 PYTHONPATH=src python scripts/register_authorized_base.py \
@@ -60,9 +68,9 @@ PYTHONPATH=src python scripts/register_authorized_base.py \
   --confirm-rights
 ```
 
-5. 啟動 AutoVtuber，確認該 base 出現在表單下拉選單。
-6. 跑第一個角色生成，產出 `.vrm`、persona、概念圖與預覽圖。
-7. 填寫 `handoff/AUTOVTUBER_EXPORT_<character_id>_<YYYYMMDD>.md` 給 VDrama。
+6. 啟動 AutoVtuber，確認該 base 出現在表單下拉選單。
+7. 跑第一個角色生成，產出 `.vrm`、persona、概念圖與預覽圖。
+8. 填寫 `handoff/AUTOVTUBER_EXPORT_<character_id>_<YYYYMMDD>.md` 給 VDrama。
 
 ## 不可接受的 base
 
