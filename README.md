@@ -26,6 +26,8 @@
 > 自有或另行獲准的 VRM 0.x 底模可依 [`docs/AUTHORIZED_BASE_IMPORT.md`](docs/AUTHORIZED_BASE_IMPORT.md) 註冊後使用。
 > 與另一台電腦上的 VDrama 協作採 Markdown 契約，見 [`docs/VDRAMA_MARKDOWN_HANDOFF.md`](docs/VDRAMA_MARKDOWN_HANDOFF.md) 與 [`handoff/`](handoff/) 模板。
 
+> **VRM 生成方式**：AutoVtuber 目前是基於合法 VRM 0.x base 自動生成新角色，不是從零建立 humanoid skeleton、skinning 與 blendshape。合法 base 準備流程見 [`docs/BASE_VRM_PREP_PACKET.md`](docs/BASE_VRM_PREP_PACKET.md)。
+
 ---
 
 ## 🧍 3D 成果與臉型驗證
@@ -236,7 +238,7 @@ autovtuber/
 │   ├── utils/          # logging / timing / path_helpers
 │   └── main.py         # python -m autovtuber 入口
 ├── tests/              # pytest 154 passing + 1 headless-only skip（2026-05-27）
-├── scripts/            # smoke tests / preview rendering / authorized base registration
+├── scripts/            # smoke tests / preview rendering / authorized base registration / atlas inspect
 ├── external/TripoSR/   # vendored (gitignored — clone via setup wizard)
 ├── assets/base_models/ # 本機 VRM + 權利註冊表 (gitignored)
 ├── docs/               # architecture / HARDWARE_PROTOCOL / LICENSES / images/...

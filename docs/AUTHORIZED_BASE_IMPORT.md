@@ -2,11 +2,22 @@
 
 AutoVtuber 產品輸出必須使用你擁有權利，或已取得明確授權可供角色生成服務使用的 VRM 0.x base。`AvatarSample_A/B/C` 不可用作產品 base。
 
+完整準備包見 [`BASE_VRM_PREP_PACKET.md`](./BASE_VRM_PREP_PACKET.md)。若還不知道 atlas index，先用 `scripts/inspect_vrm_atlas.py` 產生檢查報告。
+
 ## 匯入流程
 
 1. 準備一份合法的 `.vrm` 檔案與可追溯的授權依據。
 2. 依模型材質確認 `face_skin`、`hair`、`eye_iris` 與選用的 `eye_white` image index。
-3. 從專案根目錄執行：
+3. 若不確定 index，先從專案根目錄執行：
+
+```bash
+PYTHONPATH=src python scripts/inspect_vrm_atlas.py \
+  --source /path/to/OwnedBase.vrm \
+  --model-id OwnedBaseF \
+  --out docs/evidence/OwnedBaseF_atlas_inspect.md
+```
+
+4. 確認 index 後註冊：
 
 ```bash
 PYTHONPATH=src python scripts/register_authorized_base.py \
