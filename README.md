@@ -24,6 +24,7 @@
 > ⚠️ **發佈狀態**：角色生成與 VRM quality gate 已完成 Beta 驗證；公開或商業發佈仍受 base VRM 授權替換、Windows 打包與 Warudo/VSeeFace 最終實機驗收阻擋。進度見 `docs/RELEASE_READINESS.md`。
 > 預設設定現已停用 AvatarSample A/B/C 角色生成；舊成果重現僅可在理解其限制後以 `assets.allow_restricted_samples_for_validation = true` 手動啟用。
 > 自有或另行獲准的 VRM 0.x 底模可依 [`docs/AUTHORIZED_BASE_IMPORT.md`](docs/AUTHORIZED_BASE_IMPORT.md) 註冊後使用。
+> 與另一台電腦上的 VDrama 協作採 Markdown 契約，見 [`docs/VDRAMA_MARKDOWN_HANDOFF.md`](docs/VDRAMA_MARKDOWN_HANDOFF.md) 與 [`handoff/`](handoff/) 模板。
 
 ---
 
@@ -357,6 +358,13 @@ AutoVtuber 是 **VRM 角色生成器**。以下是消費這個 `.vrm` 產物的�
 | **VDrama**（V 劇坊，開發中）| 把 AutoVtuber 產的 `.vrm` 載入 Three.js + `@pixiv/three-vrm` 瀏覽器場景，配 LLM 拆解小說 / 新聞腳本 → Mixamo 動作庫 + Azure TTS Viseme 中文口型同步 → 輸出「人會動的圖文短劇」`.mp4`。Sprint 0 可行性 spike 已通過：VRM 0.x / 28,292 tris / 54 humanoid bones / 15 expressions 在瀏覽器完整渲染 + animation loop 0 errors |
 
 AutoVtuber 的 quality gate 契約（**54 humanoid bones / 67 blendshape clips / 52 ARKit/Perfect Sync clips / 3 skinned meshes / 560 morph targets**）正是 VDrama 演出層所需的最低介面：54 bones 給 Mixamo 動作重定向、52 ARKit clips 給 Azure Viseme 口型同步、67 blendshape clips 給情緒表演。
+
+跨電腦協作只透過 Markdown 與二進位交付物進行，不共享程式碼或執行環境：
+
+- 協作規格：[`docs/VDRAMA_MARKDOWN_HANDOFF.md`](docs/VDRAMA_MARKDOWN_HANDOFF.md)
+- AutoVtuber 交付模板：[`handoff/AUTOVTUBER_EXPORT_TEMPLATE.md`](handoff/AUTOVTUBER_EXPORT_TEMPLATE.md)
+- VDrama 回饋模板：[`handoff/VDRAMA_FEEDBACK_TEMPLATE.md`](handoff/VDRAMA_FEEDBACK_TEMPLATE.md)
+- 給另一台電腦的最新訊息：[`handoff/COORDINATION_MESSAGE_2026-05-28.md`](handoff/COORDINATION_MESSAGE_2026-05-28.md)
 
 ---
 

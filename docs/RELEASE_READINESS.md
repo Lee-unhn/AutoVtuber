@@ -16,6 +16,7 @@
 | 程式碼授權標示 | BLOCKED | `pyproject.toml` 保留待定狀態；專案所有者需決定正式 LICENSE |
 | PyInstaller Windows 成品 | PENDING | 目前僅有 `autovtuber.spec` 與打包文件，未保存實機 build 驗收紀錄 |
 | Warudo / VSeeFace 最終動作驗收 | PENDING | 必須在目標 Windows 電腦載入最終合法 base 產物驗收 |
+| VDrama Markdown 交接 | READY | 已建立 `docs/VDRAMA_MARKDOWN_HANDOFF.md` 與 `handoff/` 交付/回饋模板；另一台電腦只需讀寫 Markdown |
 
 ## 依重要性執行順序
 
@@ -47,6 +48,14 @@
 - [ ] 將合法 base 產出的 `.vrm` 載入 Warudo 或 VSeeFace。
 - [ ] 檢查頭身、材質、眨眼、嘴型、表情與 Perfect Sync。
 - [ ] 留存截圖、影片與問題回報，通過後才能標記 v1 release-ready。
+
+### P4 - VDrama 跨電腦交接
+
+- [x] 建立 AutoVtuber / VDrama Markdown 交接規格。
+- [x] 建立 AutoVtuber 角色交付模板與 VDrama 回饋模板。
+- [x] 寫下給另一台電腦的協作訊息。
+- [ ] 第一個合法角色產出後，填寫 `handoff/AUTOVTUBER_EXPORT_<character_id>_<YYYYMMDD>.md`。
+- [ ] VDrama 測試後回填 `handoff/VDRAMA_FEEDBACK_<character_id>_<YYYYMMDD>.md`。
 
 ## 當前最短路徑
 
