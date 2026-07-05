@@ -12,7 +12,7 @@
 | 項目 | 內容 |
 |---|---|
 | **專案路徑** | `G:\claude專案資料夾\AutoVtuber` |
-| **狀態** | 🔄 **架構大改 — 3D-first 路線**：MVP1 重新定義（保留 2D 作風格前置 + persona）、MVP2 加 image-to-3D（TripoSR）。face_baker.py v3 已寫但 2D 對齊本就有限，標為 fallback。Session 暫停壓縮等下次續行。 |
+| **狀態** | ✅ **MVP1–MVP3 + MVP4-α 全完成**（3D-first 路線：persona + TripoSR image-to-3D + mesh fitting，pytest 139/139 全綠，14 個 GitHub commits）。MVP5 完成 / MVP5.5（VoxCPM 聲音預覽）進行中。**等待使用者 VSeeFace 實機肉眼驗收**，自動推進已停。 |
 | **建立日期** | 2026-04-26 |
 | **目標格式** | VRM 1.0（向下兼容 VRM 0.x） |
 | **平台** | Windows 11 桌面 app |
