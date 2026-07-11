@@ -1,0 +1,36 @@
+{
+  "schema": "project-meta v1",
+  "id": "autovtuber",
+  "name": "AutoVtuber",
+  "emoji": "🎭",
+  "domain": "media",
+  "status": "active",
+  "privacy": "private",
+  "doc": "AUTOVTUBER.md",
+  "tagline": "表單→VRM 虛擬人自動產線",
+  "deps": [
+    "sdxl",
+    "ollama-gemma4",
+    "triposr"
+  ],
+  "links": [
+    "vdrama",
+    "index-tts"
+  ],
+  "uses_agents": [
+    "Backend Architect",
+    "Code Reviewer",
+    "DevOps Automator",
+    "Evidence Collector",
+    "Frontend Developer",
+    "Image Prompt Engineer",
+    "Rapid Prototyper",
+    "Reality Checker",
+    "Software Architect",
+    "UX Architect"
+  ],
+  "uses_skills": [],
+  "repo": null,
+  "last_touched": "2026-04-27",
+  "notes": ""
+}
