@@ -12,7 +12,7 @@
 | 項目 | 內容 |
 |---|---|
 | **專案路徑** | `G:\claude專案資料夾\AutoVtuber` |
-| **狀態** | ✅ **MVP1–MVP3 + MVP4-α 全完成**（3D-first 路線：persona + TripoSR image-to-3D + mesh fitting，pytest 139/139 全綠，14 個 GitHub commits）。MVP5 完成 / MVP5.5（VoxCPM 聲音預覽）進行中。**等待使用者 VSeeFace 實機肉眼驗收**，自動推進已停。 |
+| **狀態** | 🔄 **2026-07-12 戰略轉向「B 路線：VRoid 增強器」（Lee 拍板 + CoS 裁決）**。舊路線（一鍵全生成）廢止原因：①AI 生成皮三法域（美日台）均無著作權 — 使用者拿到的皮無排他權、「自有皮」賣點法律上不存在；②TripoSR 落後 2 代（→Hunyuan3D/TRELLIS）且 3060 12GB 升級無保證；③「等 Lee 人工 VSeeFace 驗收」停滯六週 = 與 VDrama demo-001 同款死因。**新定義**：使用者自捏 VRoid base（pixiv ToS 明文商用權歸創作者）→ AI 只生成 texture 加速 → 內建「最小著作權儀式」（必經改髮型步驟跨 L2 可主張線 + 微調留痕 + 匯出 provenance.json 舉證包）。TripoSR 整段刪除。舊資產保留（pytest 139/139、UV 貼合 = B 路線核心正好是已完成部分）。**首交付**（VDrama S14 探針 ship 後）：端到端 spike「使用者 VRoid 檔→AI texture→回貼→VRM 可載入」，驗收全機械（pytest + 自動渲染截圖包，不設等 Lee 的關卡）。**三個風險備忘**：B 受眾是抵制 AI 的 VTuber 圈 → 把「自捏+留痕」做成產品敘事主軸；provenance 文案禁寫「保證著作權」只寫「最大化可主張性」；分發形態（exe/網頁/VRoid 外掛）P1 前必須定，否則又是零外部用戶完工品。使命定位（Lee 原話）：「讓普通人也可以縮短自己當vtuber的入門難度」— 精確版 = 讓用不起 $500-5000 委託的人有一顆不撞臉、權利在自己手上的免費 3D 皮。 |
 | **建立日期** | 2026-04-26 |
 | **目標格式** | VRM 1.0（向下兼容 VRM 0.x） |
 | **平台** | Windows 11 桌面 app |
@@ -58,7 +58,7 @@
 
 ### 3D / VRM 處理
 - **trimesh** + **pygltflib** — glTF/VRM 檔案讀寫
-- **VRoid 開源 base 模型**（CC0 授權）— 作為骨架/blendshape 基底
+- **VRoid base 模型**（pixiv 官方 AvatarSample_A/B/C — ⚠️ 非 CC0；2026-07-12 查證實際條款為 pixiv 官方授權：Corporate use: Allow / Individual commercial use: Allow / Redistribution: Allow / Alterations: Allow / Attribution: Not required。禁止：暗示 pixiv 背書、轉賣原始模型檔。來源 https://vroid.pixiv.help/hc/en-us/articles/4402394424089 ）— 作為骨架/blendshape 基底
 - **OpenCV** — UV 貼圖貼合（把 AI 生成臉部對齊到 base 模型 UV）
 - **QtQuick3D** — 即時 3D 預覽
 
