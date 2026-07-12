@@ -151,6 +151,7 @@ class VoiceGenerator:
 
         try:
             with self._loader.acquire(ModelKind.VOX_TTS, _loader_fn, _unloader_fn) as model:
+                self._post_load_recovery()
                 self._guard.check_or_raise()
                 wav, sr = self._run_inference(model, full_text)
         except SafetyAbort:
@@ -190,6 +191,24 @@ class VoiceGenerator:
             )
 
     # ---------- internal ---------- #
+
+    def _post_load_recovery(self) -> None:
+        """VoxCPM ckpt 載入後若 abort_event 仍鎖定，給系統時間回落並嘗試解鎖。
+
+        Race scenario（同 image_to_3d._post_load_recovery）：from_pretrained 把
+        ckpt 塞進 CPU RAM 的瞬間可能觸發 RAM abort；載入完成後 RAM 回落，
+        本方法輪詢清掉殘留的 abort_event，避免 voice 步驟被誤殺。
+        """
+        import time
+        if not getattr(self._guard, "abort_event", None) or not self._guard.abort_event.is_set():
+            return
+        _log.info("Post-VoxCPM-load abort_event set, attempting recovery...")
+        for attempt in range(8):
+            time.sleep(0.5)
+            if self._guard.try_clear_abort_if_recovered(source=f"voice_generator att{attempt}"):
+                _log.info("✓ Recovered after attempt {}", attempt)
+                return
+        _log.warning("Could not clear abort_event after 4s; downstream check_or_raise will raise")
 
     def _build_pipe(self):
         """載入 VoxCPM。lazy import 避免測試環境需要整套 VoxCPM stack。"""
