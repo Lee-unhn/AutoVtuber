@@ -2,9 +2,12 @@
 
 VRAM 安全策略：
     - 透過 ModelLoader.acquire(ModelKind.SDXL) 序列化（同時間 GPU 只一個重模型）
-    - 強制 enable_sequential_cpu_offload() — 慢但 12GB VRAM 安全
+    - 純 GPU mode（fp16 ~9.5GB VRAM；16GB RAM 撐不住 CPU offload）
     - 強制 enable_vae_slicing() + enable_vae_tiling() — 防 VAE 解碼爆 VRAM
     - 預設 steps=20 / size=1024² / batch=1（保守參數）
+
+同一 job 需要多張圖（如 iris assertion retry）時用 `session()` —
+單次 acquire 內可重複 generate，避免每張圖都從磁碟重載 6.5GB ckpt。
 
 設計原則：
     - 模組可在沒裝 torch/diffusers 的環境 import（lazy import 在 _build_pipeline 內）
@@ -12,8 +15,9 @@ VRAM 安全策略：
 """
 from __future__ import annotations
 
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Iterator
 
 from PIL import Image
 
@@ -66,13 +70,9 @@ class FaceGenerator:
 
     # ---------------- public ---------------- #
 
-    def generate(
-        self,
-        prompt: GeneratedPrompt,
-        reference_photo_path: str | None = None,
-        progress_cb: Callable[[int, int], None] | None = None,
-    ) -> Image.Image:
-        """生成單張前向人臉肖像。"""
+    @contextmanager
+    def session(self) -> Iterator["FaceGenSession"]:
+        """單次 acquire 的生成 session — 內可多次 generate 共用已載入 pipeline。"""
 
         def _loader_fn():
             return self._build_pipeline()
@@ -82,7 +82,17 @@ class FaceGenerator:
 
         with self._loader.acquire(ModelKind.SDXL, _loader_fn, _unloader_fn) as pipe:
             self._guard.check_or_raise()
-            return self._run_pipeline(pipe, prompt, reference_photo_path, progress_cb)
+            yield FaceGenSession(self, pipe)
+
+    def generate(
+        self,
+        prompt: GeneratedPrompt,
+        reference_photo_path: str | None = None,
+        progress_cb: Callable[[int, int], None] | None = None,
+    ) -> Image.Image:
+        """生成單張前向人臉肖像（單發便利入口；多張請用 session()）。"""
+        with self.session() as sess:
+            return sess.generate(prompt, reference_photo_path, progress_cb)
 
     # ---------------- internal ---------------- #
 
@@ -217,3 +227,23 @@ class FaceGenerator:
         except Exception:  # noqa: BLE001
             pass
         return img
+
+
+class FaceGenSession:
+    """由 FaceGenerator.session() 產生 — 持有已載入的 pipeline，可多次 generate。
+
+    不要在 session 外持有引用；離開 with 區塊後 pipeline 已被 ModelLoader 卸載。
+    """
+
+    def __init__(self, fg: FaceGenerator, pipe: Any):
+        self._fg = fg
+        self._pipe = pipe
+
+    def generate(
+        self,
+        prompt: GeneratedPrompt,
+        reference_photo_path: str | None = None,
+        progress_cb: Callable[[int, int], None] | None = None,
+    ) -> Image.Image:
+        self._fg._guard.check_or_raise()
+        return self._fg._run_pipeline(self._pipe, prompt, reference_photo_path, progress_cb)

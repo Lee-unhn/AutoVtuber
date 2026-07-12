@@ -69,6 +69,11 @@ def make_orchestrator(tmp_path: Path) -> tuple[Orchestrator, dict]:
         counters["fg"] += 1
         return Image.new("RGB", (1024, 1024), (200, 150, 130))
     fg.generate = MagicMock(side_effect=_gen)
+    # session() 是 context manager，yield 的 session 物件也走同一個計數器
+    fg_sess = MagicMock()
+    fg_sess.generate = MagicMock(side_effect=_gen)
+    fg.session.return_value.__enter__.return_value = fg_sess
+    fg.session.return_value.__exit__.return_value = False
     fg._steps = 20
 
     i23 = MagicMock()

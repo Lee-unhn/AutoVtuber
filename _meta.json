@@ -7,11 +7,11 @@
   "status": "active",
   "privacy": "private",
   "doc": "AUTOVTUBER.md",
-  "tagline": "表單→VRM 虛擬人自動產線",
+  "tagline": "VRoid 增強器：自捏 base + AI texture（B 路線）",
   "deps": [
     "sdxl",
     "ollama-gemma4",
-    "triposr"
+    "voxcpm"
   ],
   "links": [
     "vdrama",
@@ -30,7 +30,7 @@
     "UX Architect"
   ],
   "uses_skills": [],
-  "repo": null,
-  "last_touched": "2026-04-27",
-  "notes": ""
+  "repo": "https://github.com/Lee-unhn/AutoVtuber",
+  "last_touched": "2026-07-12",
+  "notes": "2026-07-12 B 路線 pivot（TripoSR 廢止待刪碼）；Stage 2 效能修復（session retry + models/sdxl SSD junction，586s→~110s 預估）"
 }

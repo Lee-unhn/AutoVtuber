@@ -655,6 +655,7 @@ for uv_pixel in face_skin_texture:
 | 2026-06-04 | **MVP5 完成** — `persona_runtime.py`：`to_llm_system_prompt()` ≤500 字 + `extract_emotion_triggers()` 中文觸發詞→VRM blendshape preset 字典 + orchestrator 自動存 `<basename>_persona_runtime.json`（10 個 tests + 32 個整合測試全綠）|
 | 2026-06-04 | 借鑑 Open-LLM-VTuber 設計（persona 雙用：閱讀 + 餵下游 chat LLM），為 MVP6 LLM provider 抽象 + MVP7 自建 VRM runtime 留接口 |
 | 2026-06-05 | **MVP5.5 啟動**：採用 **VoxCPM-0.5B**（Apache 2.0 / Voice Design / 中文+9 方言 / 5GB VRAM）作為「聲音預覽」層。寫進 AUTOVTUBER.md 外部專案借鑑清單含 DO/DON'T 對照表；架構圖加 Stage 4 + VOXCPM 模型節點 + 第 5 輸出檔（`_voice_sample.wav`）；ModelLoader 加 `ModelKind.VOX_TTS` 序列化規劃 |
+| 2026-07-12 | **Stage 2 效能診斷 + 2 修**：log 拆解推翻 Sysmem Fallback 假說 — 586s 中 77%（451s）是 **USB HDD 兩次載入 6.5GB ckpt**（推論本身僅 ~40s 健康）。修 (a) `FaceGenerator.session()` context manager，iris retry 共用已載入 pipeline 不再重載（省 ~230s）；修 (b) `models/sdxl` 實體搬 `C:\avt_hot\sdxl` + junction 回原路徑（原檔改名 `sdxl_hdd_original` 保留），from_pretrained 實測 236s→1.8s。**偏離磁碟分層 §5 凍結條款已標註**（效能關鍵讀取路徑；fresh clone 重建：`robocopy` 至 C: 後 `mklink /J`）。外部研究結論另記：DMD2 LoRA 降為低優先（推論非瓶頸）、qwen3:8b / VoxCPM 1.5 升級候選、VRoid atlas texture 生成無現成開源品 = B 路線護城河確認 |
 
 ---
 

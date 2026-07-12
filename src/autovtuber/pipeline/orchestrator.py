@@ -151,35 +151,37 @@ class Orchestrator:
                 def _step_progress(cur: int, tot: int):
                     if progress_cb:
                         progress_cb("02_face_gen", cur, tot)
-                face_img = self._fg.generate(
-                    prompt=prompt,
-                    reference_photo_path=spec.form.reference_photo_path,
-                    progress_cb=_step_progress,
-                )
-                # Iris 色彩斷言：若 concept 眼色與表單偏差太大，重生一次（避免 AnimagineXL bias）
-                iris_check = assert_iris_color_matches_form(face_img, spec.form)
-                if not iris_check.passed:
-                    _log.warning(
-                        "Iris color assertion FAILED on first try: {} — regenerating with different seed",
-                        iris_check.detail,
-                    )
-                    # 重生：略改 seed 提示模型 explore 不同樣本
-                    retry_prompt = prompt.model_copy(
-                        update={"seed": (prompt.seed + 7919) if prompt.seed >= 0 else -1}
-                    )
-                    face_img = self._fg.generate(
-                        prompt=retry_prompt,
+                # session()：retry 共用已載入 pipeline，不重載 6.5GB ckpt（省 ~230s）
+                with self._fg.session() as fg_sess:
+                    face_img = fg_sess.generate(
+                        prompt=prompt,
                         reference_photo_path=spec.form.reference_photo_path,
                         progress_cb=_step_progress,
                     )
-                    iris_check_retry = assert_iris_color_matches_form(face_img, spec.form)
-                    _log.warning(
-                        "After regeneration: {} ({})",
-                        "PASS" if iris_check_retry.passed else "still FAIL",
-                        iris_check_retry.detail,
-                    )
-                else:
-                    _log.info("Iris color check OK: {}", iris_check.detail)
+                    # Iris 色彩斷言：若 concept 眼色與表單偏差太大，重生一次（避免 AnimagineXL bias）
+                    iris_check = assert_iris_color_matches_form(face_img, spec.form)
+                    if not iris_check.passed:
+                        _log.warning(
+                            "Iris color assertion FAILED on first try: {} — regenerating with different seed",
+                            iris_check.detail,
+                        )
+                        # 重生：略改 seed 提示模型 explore 不同樣本
+                        retry_prompt = prompt.model_copy(
+                            update={"seed": (prompt.seed + 7919) if prompt.seed >= 0 else -1}
+                        )
+                        face_img = fg_sess.generate(
+                            prompt=retry_prompt,
+                            reference_photo_path=spec.form.reference_photo_path,
+                            progress_cb=_step_progress,
+                        )
+                        iris_check_retry = assert_iris_color_matches_form(face_img, spec.form)
+                        _log.warning(
+                            "After regeneration: {} ({})",
+                            "PASS" if iris_check_retry.passed else "still FAIL",
+                            iris_check_retry.detail,
+                        )
+                    else:
+                        _log.info("Iris color check OK: {}", iris_check.detail)
             stages.append(StageResult(
                 name="02_face_gen",
                 succeeded=True,
