@@ -66,7 +66,7 @@ def main() -> int:
             paths.models,
             allow_restricted_samples_for_validation=True,
         )
-        persona = PersonaGenerator(preferred_model="qwen2.5:3b")
+        persona = PersonaGenerator(preferred_model="qwen3:8b")
         i23 = ImageTo3D(loader, guard, paths.models, mc_resolution=128)
         mf = MeshFitter(mode="tint", tint_strength=0.5)
         vg = VoiceGenerator(loader, guard)  # MVP5.5：VoxCPM-0.5B Stage 4

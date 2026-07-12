@@ -263,7 +263,7 @@ class PromptBuilder:
         base_url: str = "http://localhost:11434",
         default_model: str = "gemma4:e4b",
         preferred_model: str = "",
-        request_timeout_seconds: int = 60,
+        request_timeout_seconds: int = 150,  # 60s 冷載入常超時（2026-07-12 實測 gemma4:e2b 冷載 >60s → 全退 template）
         unload_poll_timeout_seconds: int = 10,
         session: requests.Session | None = None,
     ):
@@ -552,33 +552,52 @@ class PromptBuilder:
             "nsfw, lowres, bad anatomy, multiple views, side view, back view",
         )
 
+    def release_ollama(self) -> None:
+        """公開入口：清空 Ollama 全部駐留模型。
+
+        給 orchestrator 在 VRAM 競爭（外部排程半路塞模型進共享 Ollama）時
+        重試前呼叫。失敗會 raise SafetyAbort — caller 自行決定要不要吞。
+        """
+        self._force_unload()
+
     def _force_unload(self) -> None:
-        """送 keep_alive=0 強制卸載 + 輪詢 /api/ps 等到真的卸了才返回。"""
+        """清空 Ollama 的**全部**駐留模型 + 輪詢 /api/ps 等到真的空了才返回。
+
+        不只卸 self._model：Ollama 是整機共享服務（persona override、
+        同 process 的測試、其他排程都可能留下模型），ModelKind.OLLAMA 被
+        evict 的語意 = 「GPU 讓位給下一個重模型」，殘留任何一顆都會把
+        SDXL 推過 VRAM abort 線（2026-07-12 實測：qwen2.5:3b 殘留 2.4GB
+        → SDXL 階段 11.75/11.50GB abort）。
+        """
+        # 列出目前所有駐留模型；列不到就退回只卸自己的
+        loaded: list[str] = [self._model]
         try:
-            self._session.post(
-                f"{self._base_url}/api/generate",
-                json={"model": self._model, "prompt": "", "keep_alive": 0, "stream": False},
-                timeout=self._timeout,
-            )
-        except requests.RequestException as e:
-            _log.warning("Force-unload request failed: {} — continuing to poll", e)
+            r = self._session.get(f"{self._base_url}/api/ps", timeout=5)
+            r.raise_for_status()
+            loaded = [m["name"] for m in r.json().get("models", []) if m.get("name")] or loaded
+        except requests.RequestException:
+            pass
+        for name in loaded:
+            try:
+                self._session.post(
+                    f"{self._base_url}/api/generate",
+                    json={"model": name, "prompt": "", "keep_alive": 0, "stream": False},
+                    timeout=self._timeout,
+                )
+            except requests.RequestException as e:
+                _log.warning("Force-unload request for {} failed: {} — continuing to poll", name, e)
 
         deadline = time.time() + self._unload_timeout
         while time.time() < deadline:
             try:
                 r = self._session.get(f"{self._base_url}/api/ps", timeout=5)
                 r.raise_for_status()
-                models = r.json().get("models", [])
-                still_loaded = any(
-                    (m.get("name") == self._model) or m.get("name", "").startswith(self._model.split(":")[0] + ":")
-                    for m in models
-                )
-                if not still_loaded:
-                    _log.debug("✓ Ollama model {} unloaded; VRAM freed", self._model)
+                if not r.json().get("models", []):
+                    _log.debug("✓ All Ollama models unloaded ({}); VRAM freed", ", ".join(loaded))
                     return
             except requests.RequestException:
                 pass
             time.sleep(0.3)
         raise SafetyAbort(
-            f"Ollama failed to release VRAM for {self._model} within {self._unload_timeout}s"
+            f"Ollama failed to release VRAM for {', '.join(loaded)} within {self._unload_timeout}s"
         )

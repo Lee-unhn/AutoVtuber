@@ -391,23 +391,28 @@ class PersonaGenerator:
                 "Persona using preferred_model={} (overrides session model={})",
                 chat_model, info.model,
             )
+        payload = {
+            "model": chat_model,
+            "messages": [
+                {"role": "system", "content": _SYSTEM_PROMPT},
+                {"role": "user", "content": user_msg},
+            ],
+            "stream": False,
+            "keep_alive": -1,
+            "options": {
+                # 適合長文輸出的設定
+                "temperature": 0.85,
+                "top_p": 0.95,
+                "num_predict": 1500,
+            },
+        }
+        # qwen3 系列：關 thinking mode（persona 不需要 CoT，省 30-60s；
+        # 只對 qwen3 送 — 不支援 thinking 的模型收到 think 參數會報錯）
+        if chat_model.startswith("qwen3"):
+            payload["think"] = False
         r = info.session.post(
             f"{info.base_url}/api/chat",
-            json={
-                "model": chat_model,
-                "messages": [
-                    {"role": "system", "content": _SYSTEM_PROMPT},
-                    {"role": "user", "content": user_msg},
-                ],
-                "stream": False,
-                "keep_alive": -1,
-                "options": {
-                    # 適合長文輸出的設定
-                    "temperature": 0.85,
-                    "top_p": 0.95,
-                    "num_predict": 1500,
-                },
-            },
+            json=payload,
             timeout=self._timeout,
         )
         r.raise_for_status()
@@ -475,6 +480,8 @@ class PersonaGenerator:
     def _post_process(content: str) -> str:
         """清掉常見的 markdown 圍欄與開場白。"""
         text = content.strip()
+        # qwen3 保險：think=False 下不該出現，但殘留的 <think>…</think> 一律剝掉
+        text = re.sub(r"<think>.*?</think>\s*", "", text, flags=re.DOTALL).strip()
         # 去掉 ```markdown ... ``` 包裝
         text = re.sub(r"^```(?:markdown|md)?\s*\n", "", text, flags=re.MULTILINE)
         text = re.sub(r"\n```\s*$", "", text)

@@ -129,7 +129,7 @@ def main() -> int:
         allow_restricted_samples_for_validation=settings.assets.allow_restricted_samples_for_validation,
     )
     # qwen2.5:3b 對中文長文章節輸出穩定度高於 gemma4:e2b（後者偶爾掉第 7 章節）
-    persona_generator = PersonaGenerator(preferred_model="qwen2.5:3b")
+    persona_generator = PersonaGenerator(preferred_model="qwen3:8b")
     image_to_3d = ImageTo3D(loader, guard, paths.models, mc_resolution=128)
     mesh_fitter = MeshFitter(mode="tint", tint_strength=0.5)
 
