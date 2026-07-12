@@ -69,7 +69,7 @@ def main() -> int:
 
     # 5. HardwareGuard + MonitorWorker
     thresholds = Thresholds.from_settings(settings.safety)
-    guard = HardwareGuard(thresholds)
+    guard = HardwareGuard(thresholds, poll_root_path=paths.output)
     guard.start()
 
     from .workers.monitor_worker import MonitorWorker
@@ -122,7 +122,12 @@ def main() -> int:
         ip_adapter_scale_without_photo=settings.generation.ip_adapter_scale_without_photo,
     )
     face_aligner = FaceAligner(paths.models)
-    vrm_assembler = VRMAssembler(paths.base_models, paths.models)
+    vrm_assembler = VRMAssembler(
+        paths.base_models,
+        paths.models,
+        commercial_mode=settings.commercial.mode,
+        allow_restricted_samples_for_validation=settings.assets.allow_restricted_samples_for_validation,
+    )
     # qwen2.5:3b 對中文長文章節輸出穩定度高於 gemma4:e2b（後者偶爾掉第 7 章節）
     persona_generator = PersonaGenerator(preferred_model="qwen2.5:3b")
     image_to_3d = ImageTo3D(loader, guard, paths.models, mc_resolution=128)
@@ -305,7 +310,12 @@ def main() -> int:
     if not paths.setup_flag.exists():
         log.info("setup_complete.flag missing → launching first-run setup wizard")
         from .ui.setup_wizard import SetupWizard
-        wizard = SetupWizard(paths, ollama_base_url=settings.ollama.base_url).build()
+        wizard = SetupWizard(
+            paths,
+            ollama_base_url=settings.ollama.base_url,
+            commercial_mode=settings.commercial.mode,
+            allow_restricted_samples_for_validation=settings.assets.allow_restricted_samples_for_validation,
+        ).build()
         result = wizard.exec()
         if result == 0:  # QDialog.Rejected → 使用者取消
             log.warning("Setup wizard cancelled by user; exiting")

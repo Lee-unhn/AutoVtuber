@@ -30,9 +30,15 @@ ProgressCb = Callable[[int, int], None]
 class SetupDownloader:
     """根據 ResourceStatus.key dispatch 到對應下載邏輯。"""
 
-    def __init__(self, paths: Paths, ollama_base_url: str = "http://localhost:11434"):
+    def __init__(
+        self,
+        paths: Paths,
+        ollama_base_url: str = "http://localhost:11434",
+        allow_restricted_sample_bases: bool = False,
+    ):
         self._paths = paths
         self._ollama_url = ollama_base_url
+        self._allow_restricted_sample_bases = allow_restricted_sample_bases
         self._cancelled = False
 
     def cancel(self) -> None:
@@ -85,6 +91,8 @@ class SetupDownloader:
                 model_name = resource.display_name.split(" ")[1]  # "Ollama gemma4:e2b ..." → "gemma4:e2b"
                 return self._dl_ollama(model_name, progress_cb)
             if key.startswith("base_vrm_"):
+                if not self._allow_restricted_sample_bases:
+                    return False, "blocked by asset policy: provide an authorized product base VRM"
                 sample_id = key.split("_")[-1].upper()
                 return self._dl_base_vrm(sample_id, progress_cb)
 

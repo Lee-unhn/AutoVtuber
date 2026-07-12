@@ -20,10 +20,10 @@
 
 ---
 
-## Base VRM 模型（D01 完成 2026-04-26）
+## Base VRM 模型（Legacy 本機驗證用途，不作發佈 base）
 
-> ⚠️ 這些檔案直接放在 `assets/base_models/` 並已隨 setup wizard 內建，**不必重複下載**。
-> 只在離線封裝失效時才透過 wizard 下載。SHA-256 在實機下載後填入 `manifest.lock.json`。
+> ⚠️ AvatarSample A/B/C 受 VRoid sample model 條款限制，不得用於 AutoVtuber 角色建立服務的發佈 base。
+> 它們只保留供既有本機結構測試重現使用；預設模式與商用模式都不會下載或選用這些資產。重現舊測試時需明確設定 `assets.allow_restricted_samples_for_validation=true`。
 
 | key | url | sha256 | size_mb | dest_relative |
 |---|---|---|---|---|
@@ -38,3 +38,5 @@
 > Setup wizard 程式碼需相應處理 — manifest.py 解析時會帶這個 prefix。
 >
 > SHA-256 真實值在 `assets/base_models/manifest.lock.json` 寫入。第一次下載成功後 setup wizard 自動產生。
+>
+> Release blocker：加入一個專案所有者自製或另行獲准授權、且已建立 `AtlasMap` 的 VRM 0.x base model。

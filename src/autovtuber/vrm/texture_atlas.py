@@ -6,7 +6,9 @@ VRoid 匯出的 VRM 通常材質名稱規律可預測（FaceMouth, EyeIris, Hair
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
+from ..config.asset_policy import atlas_indices_for_base_model
 from .vrm_io import VRMFile
 
 
@@ -20,15 +22,18 @@ class AtlasMap:
     eye_white_index: int | None = None  # 有些 base 把眼白合併在 face_skin
 
     @classmethod
-    def for_base_model(cls, base_model_id: str) -> "AtlasMap":
+    def for_base_model(cls, base_model_id: str, base_models_dir: Path | None = None) -> "AtlasMap":
         """根據 base 模型 ID 取對應 atlas。
 
         ⚠️ 這些 index 是「manual mapped」— 加新 base 模型時必須手動跑 list_images()
         確認索引並更新此對照表。
         """
-        if base_model_id not in _ATLAS_MAPS:
-            raise KeyError(f"Unknown base model id: {base_model_id!r}")
-        return _ATLAS_MAPS[base_model_id]
+        if base_model_id in _ATLAS_MAPS:
+            return _ATLAS_MAPS[base_model_id]
+        registered = atlas_indices_for_base_model(base_model_id, base_models_dir)
+        if registered is not None:
+            return cls(**registered)
+        raise KeyError(f"Unknown base model id: {base_model_id!r}")
 
 
 # 已實機驗證 (2026-04-26) 透過讀取 AvatarSample_B.vrm 內 30 個 image 條目。

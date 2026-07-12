@@ -14,7 +14,11 @@
 
 AutoVtuber 把傳統 20–100 小時的 Live2D 繪製 + 綁定流程，壓縮成「填表單 → 5–10 分鐘出 `.vrm`」的全自動 pipeline。使用者透過 PySide6 GUI 輸入髮色/眼色/個性/風格/暱稱，系統依序執行 Ollama 提示生成、SDXL 1.0 + AnimagineXL 4.0 LoRA 出概念圖、TripoSR 建 3D 臉型 mesh、MeshFitter 貼合 VRoid base atlas，最後 VRMAssembler 輸出 VRM 0.x（含 hair/eye recolor + skin tone tint）+ 七章節 persona markdown + chat-ready runtime JSON。
 
-實機跑時：RTX 3060 12GB / Ryzen 7 / 16GB RAM 約 7 分鐘（420s e2e）。
+實機跑時：RTX 3060 12GB / Ryzen 7 / 16GB RAM 約 5 分鐘（290s e2e，2026-07-12 SSD junction + retry session 修復後；先前 USB HDD 約 8-16 分鐘）。
+
+> ⚠️ **發佈狀態（release asset policy）**：角色生成與 VRM quality gate 已完成 Beta 驗證；公開或商業發佈仍受 base VRM 授權、Windows 打包與實機驗收阻擋，進度見 [`docs/RELEASE_READINESS.md`](docs/RELEASE_READINESS.md)。
+> 預設停用 AvatarSample A/B/C 作產品 base（僅驗證用，`assets.allow_restricted_samples_for_validation = true` 手動啟用）；自有或另行獲准的 VRM 0.x 底模依 [`docs/AUTHORIZED_BASE_IMPORT.md`](docs/AUTHORIZED_BASE_IMPORT.md) 註冊，準備流程見 [`docs/BASE_VRM_PREP_PACKET.md`](docs/BASE_VRM_PREP_PACKET.md)。
+> 與 VDrama（下游 VRM 消費者）協作採 Markdown 契約：[`docs/VDRAMA_MARKDOWN_HANDOFF.md`](docs/VDRAMA_MARKDOWN_HANDOFF.md) + [`handoff/`](handoff/) 模板。
 
 ### 品質保證
 

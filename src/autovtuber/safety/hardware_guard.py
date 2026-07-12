@@ -19,6 +19,7 @@ from __future__ import annotations
 import shutil
 import threading
 import time
+from pathlib import Path
 from dataclasses import dataclass
 from enum import Enum
 from typing import Callable
@@ -123,12 +124,12 @@ class HardwareGuard:
         thresholds: Thresholds,
         on_state_change: Callable[[HealthState, HardwareSnapshot], None] | None = None,
         nvml_adapter: _NvmlAdapter | None = None,
-        poll_root_path: str = "G:\\",
+        poll_root_path: str | Path | None = None,
     ):
         self.thresholds = thresholds
         self._on_state_change = on_state_change
         self._nvml = nvml_adapter
-        self._poll_root_path = poll_root_path
+        self._poll_root_path = Path(poll_root_path) if poll_root_path is not None else Path.cwd()
 
         self._abort_event = threading.Event()
         self._cooldown_event = threading.Event()

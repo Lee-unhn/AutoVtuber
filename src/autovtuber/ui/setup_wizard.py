@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from ..config.asset_policy import has_commercial_base_model
 from ..config.paths import Paths
 from ..safety.thresholds import MIN_DRIVER_VERSION, MIN_VRAM_GB
 from ..setup.resource_check import ResourceCheck, ResourceState, check_all_resources
@@ -26,9 +27,19 @@ _log = get_logger(__name__)
 class SetupWizard:
     """工廠類別 — build() 回傳一個 QWizard。"""
 
-    def __init__(self, paths: Paths, ollama_base_url: str = "http://localhost:11434"):
+    def __init__(
+        self,
+        paths: Paths,
+        ollama_base_url: str = "http://localhost:11434",
+        commercial_mode: bool = False,
+        allow_restricted_samples_for_validation: bool = False,
+    ):
         self._paths = paths
         self._ollama_url = ollama_base_url
+        self._commercial_mode = commercial_mode
+        self._allow_restricted_samples_for_validation = (
+            allow_restricted_samples_for_validation and not commercial_mode
+        )
         self._check: ResourceCheck | None = None
         self._download_thread = None  # 保留引用避 GC
         self._download_worker = None
@@ -90,10 +101,18 @@ class SetupWizard:
             "• <b>IP-Adapter Plus Face SDXL</b>（Apache 2.0）<br>"
             "• <b>TripoSR</b>（MIT — VAST-AI-Research / stabilityai）<br>"
             "• <b>rembg / u2net</b>（MIT）<br>"
-            "• <b>VRoid AvatarSample</b>（CC0 — madjin/vrm-samples）<br>"
+            "• <b>VRoid AvatarSample A/B/C</b>（VRoid sample model 條款；僅保留既有研究驗證，"
+            "不得作 AutoVtuber 角色建立產品的 base）<br>"
             "• <b>MediaPipe Face Mesh</b>（Apache 2.0）<br><br>"
             "完整清單見 <code>docs/LICENSES.md</code>"
         ))
+        if not self._allow_restricted_samples_for_validation and not has_commercial_base_model(self._paths.base_models):
+            commercial_notice = QLabel(
+                "<br><b>產品 base 尚未就緒：</b>目前未內建已放行的 base VRM。"
+                "生成按鈕會保持停用，直到加入自有或另行獲准授權的 VRM 0.x base。"
+            )
+            commercial_notice.setWordWrap(True)
+            l3.addWidget(commercial_notice)
         ack = QCheckBox("我已閱讀並同意上述授權")
         l3.addWidget(ack)
         p3.registerField("ack_license*", ack)
@@ -176,7 +195,11 @@ class SetupWizard:
 
         self._summary_label.setText("掃描中...")
         try:
-            self._check = check_all_resources(self._paths, self._ollama_url)
+            self._check = check_all_resources(
+                self._paths,
+                self._ollama_url,
+                include_restricted_sample_bases=self._allow_restricted_samples_for_validation,
+            )
         except Exception as e:  # noqa: BLE001
             self._summary_label.setText(f"❌ 掃描失敗：{e}")
             return
@@ -199,6 +222,11 @@ class SetupWizard:
             self._summary_label.setText(
                 f"<span style='color:#2e7d32'><b>✅ 全部 {len(self._check.items)} 項資源就緒，可直接進入下一步</b></span>"
             )
+        elif not self._check.missing:
+            self._summary_label.setText(
+                "<span style='color:#ef6c00'><b>尚缺已授權產品 base VRM。</b>"
+                "請加入自有或另行獲准授權的 VRM 0.x base 後再進行角色生成。</span>"
+            )
         else:
             self._summary_label.setText(
                 f"<span style='color:#1565c0'>需下載 <b>{len(self._check.missing)}</b> 項資源，"
@@ -219,7 +247,11 @@ class SetupWizard:
             return
 
         self._download_signals = make_download_signals()
-        downloader = SetupDownloader(self._paths, self._ollama_url)
+        downloader = SetupDownloader(
+            self._paths,
+            self._ollama_url,
+            allow_restricted_sample_bases=self._allow_restricted_samples_for_validation,
+        )
         self._download_worker = SetupDownloadWorker(self._download_signals, downloader)
 
         # signal handlers
@@ -300,12 +332,17 @@ class SetupWizard:
                 adapter.shutdown()
             ok_vram = vram_gb >= MIN_VRAM_GB
             ok_drv = int(driver.split(".")[0]) >= MIN_DRIVER_VERSION[0]
+            status_html = (
+                '<span style="color:#2e7d32">✅ 硬體符合需求</span>'
+                if ok_vram and ok_drv
+                else '<span style="color:#c62828">❌ 硬體不符需求，請更新驅動或升級 GPU</span>'
+            )
             return (
                 f"<b>GPU：</b> {name}<br>"
                 f"<b>VRAM：</b> {vram_gb:.1f} GB {'✅' if ok_vram else f'❌ (需 ≥ {MIN_VRAM_GB} GB)'}<br>"
                 f"<b>驅動版本：</b> {driver} {'✅' if ok_drv else f'❌ (需 ≥ {MIN_DRIVER_VERSION[0]})'}<br>"
                 f"<b>目前溫度：</b> {temp}°C<br><br>"
-                f"{'<span style=\"color:#2e7d32\">✅ 硬體符合需求</span>' if (ok_vram and ok_drv) else '<span style=\"color:#c62828\">❌ 硬體不符需求，請更新驅動或升級 GPU</span>'}"
+                f"{status_html}"
             )
         except Exception as e:  # noqa: BLE001
             return f"❌ 無法偵測硬體：{e}"

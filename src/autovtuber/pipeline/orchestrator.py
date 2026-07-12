@@ -401,7 +401,7 @@ def run_smoke(spec_json: str) -> int:
     thresholds = Thresholds.from_settings(settings.safety)
     spec = JobSpec.model_validate(json.loads(Path(spec_json).read_text(encoding="utf-8")))
 
-    with HardwareGuard(thresholds) as guard:
+    with HardwareGuard(thresholds, poll_root_path=paths.output) as guard:
         loader = ModelLoader(guard)
         pb = PromptBuilder(
             loader, guard,
@@ -411,7 +411,12 @@ def run_smoke(spec_json: str) -> int:
         )
         fg = FaceGenerator(loader, guard, paths.models)
         fa = FaceAligner(paths.models)
-        va = VRMAssembler(paths.base_models, paths.models)
+        va = VRMAssembler(
+            paths.base_models,
+            paths.models,
+            commercial_mode=settings.commercial.mode,
+            allow_restricted_samples_for_validation=settings.assets.allow_restricted_samples_for_validation,
+        )
         persona = PersonaGenerator()
         i23 = ImageTo3D(loader, guard, paths.models, mc_resolution=128)
         mf = MeshFitter(mode="tint", tint_strength=0.5)

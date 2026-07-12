@@ -58,7 +58,7 @@ def main() -> int:
     print("      OK")
 
     thresholds = Thresholds.from_settings(settings.safety)
-    with HardwareGuard(thresholds) as guard:
+    with HardwareGuard(thresholds, poll_root_path=paths.output) as guard:
         loader = ModelLoader(guard)
 
         print("[3/5] Constructing ImageTo3D...")

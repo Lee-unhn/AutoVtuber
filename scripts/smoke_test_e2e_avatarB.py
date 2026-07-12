@@ -47,7 +47,7 @@ def main() -> int:
     precheck_hardware_or_exit()
 
     thresholds = Thresholds.from_settings(settings.safety)
-    with HardwareGuard(thresholds) as guard:
+    with HardwareGuard(thresholds, poll_root_path=paths.output) as guard:
         loader = ModelLoader(guard)
         try:
             pb = PromptBuilder(
@@ -61,7 +61,11 @@ def main() -> int:
             return 1
         fg = FaceGenerator(loader, guard, paths.models)
         fa = FaceAligner(paths.models)
-        va = VRMAssembler(paths.base_models, paths.models)
+        va = VRMAssembler(
+            paths.base_models,
+            paths.models,
+            allow_restricted_samples_for_validation=True,
+        )
         persona = PersonaGenerator(preferred_model="qwen2.5:3b")
         i23 = ImageTo3D(loader, guard, paths.models, mc_resolution=128)
         mf = MeshFitter(mode="tint", tint_strength=0.5)

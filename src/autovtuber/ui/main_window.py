@@ -113,6 +113,9 @@ class MainWindow:
             on_submit=self._handle_submit,
             on_preview_concept=self._handle_preview_concept,
             on_finish_from_concept=self._handle_finish_from_concept,
+            commercial_mode=settings.commercial.mode,
+            allow_restricted_samples_for_validation=settings.assets.allow_restricted_samples_for_validation,
+            base_models_dir=paths.base_models,
         )
         create_layout.addWidget(self._form.widget, stretch=1)
 

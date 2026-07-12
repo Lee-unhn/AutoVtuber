@@ -58,7 +58,7 @@
 
 ### 3D / VRM 處理
 - **trimesh** + **pygltflib** — glTF/VRM 檔案讀寫
-- **VRoid base 模型**（pixiv 官方 AvatarSample_A/B/C — ⚠️ 非 CC0；2026-07-12 查證實際條款為 pixiv 官方授權：Corporate use: Allow / Individual commercial use: Allow / Redistribution: Allow / Alterations: Allow / Attribution: Not required。禁止：暗示 pixiv 背書、轉賣原始模型檔。來源 https://vroid.pixiv.help/hc/en-us/articles/4402394424089 ）— 作為骨架/blendshape 基底
+- **VRoid base 模型**（pixiv 官方 AvatarSample_A/B/C — ⚠️ 非 CC0；2026-07-12 查證實際條款為 pixiv 官方授權：Corporate use: Allow / Individual commercial use: Allow / Redistribution: Allow / Alterations: Allow / Attribution: Not required。禁止：暗示 pixiv 背書、轉賣原始模型檔。來源 https://vroid.pixiv.help/hc/en-us/articles/4402394424089 ）— 作為骨架/blendshape 基底。**Release asset policy**：AvatarSample 僅作本機驗證/測試 base（`assets.allow_restricted_samples_for_validation`）；產品角色 base 走 B 路線使用者自捏 VRoid，或依 `docs/AUTHORIZED_BASE_IMPORT.md` 註冊的合法底模
 - **OpenCV** — UV 貼圖貼合（把 AI 生成臉部對齊到 base 模型 UV）
 - **QtQuick3D** — 即時 3D 預覽
 
@@ -148,7 +148,7 @@ G:\claude專案資料夾\AutoVtuber\
 │       ├── model_loader.py    # 統一模型載入 + VRAM 管理
 │       └── vrm_io.py          # VRM 讀寫工具
 ├── assets\
-│   ├── base_models\           # VRoid CC0 base VRM 範本（多種體型）
+│   ├── base_models\           # legacy 驗證素材；產品版須換成合規 VRM 0.x base
 │   ├── lora\                  # AnimagineXL 等 LoRA 權重
 │   └── ui\                    # icons, fonts
 ├── models\                    # AI 模型權重（首次下載 ~10 GB）
@@ -216,7 +216,7 @@ G:\claude專案資料夾\AutoVtuber\
 | 風險 | 緩解策略 |
 |---|---|
 | AnimagineXL 4.0 在 12GB VRAM 可能 OOM（特別是搭配 ControlNet） | 用 `accelerate` 的 sequential CPU offload；必要時 fallback 到 SDXL Turbo（4 步生成） |
-| 找不到 CC0 授權的 VRoid base 模型 | Plan B：請使用者用 VRoid Studio 自製一個空白 base，AutoVtuber 只做「自動修改」 |
+| 找不到明確授權可供角色建立服務輸出的 VRM base | 請使用者用 VRoid Studio 自製並確認所用素材權利，AutoVtuber 僅在本機登錄後做「自動修改」 |
 | AI 臉部貼到 3D 模型 UV 對不齊 | 用 InsightFace 偵測 5 個人臉特徵點，warpAffine 對齊 base UV 模板 |
 | Ollama 已被 VideoForge 占用 11434 port | AutoVtuber 共用同一個 Ollama 實例（讀取現有配置） |
 | 首次執行需下載 ~10 GB | 加裝安裝精靈，分階段下載 + 進度條；可斷點續傳 |
@@ -245,10 +245,10 @@ G:\claude專案資料夾\AutoVtuber\
 - 模型/資產白名單（首選）：
   - Stable Diffusion XL — CreativeML Open RAIL++-M（商用 OK）
   - AnimagineXL 4.0 — Fair AI Public License 1.0-SD（商用 OK，需保留 attribution）
-  - VRoid base 模型 — 只挑 CC0 / VRoid Hub 「商用可」標記者
+  - VRM base 模型 — 只接受自有或另行獲准、且可追溯授權證據允許角色建立服務輸出的資產
   - IP-Adapter — Apache 2.0
   - MediaPipe — Apache 2.0
-- **商用切換開關**：UI 設定可勾「商用模式」，自動隱藏未確認商用的模型選項
+- **資產放行防線**：預設與商用模式都由 UI 及 pipeline 阻擋未放行的 base 模型；目前 AvatarSample A/B/C 均只可在明確開啟 legacy validation 時重現舊測試；自有或另行獲准的 VRM 0.x 可透過 `scripts/register_authorized_base.py` 登錄權利依據與 atlas mapping 後使用
 
 ### A4. 自動下載模型 + 進度條
 - 首次啟動跑「Setup Wizard」：
@@ -387,7 +387,7 @@ G:\claude專案資料夾\AutoVtuber\
 |---|---|---|
 | **MVP1（重新定義）** | 表單 → LLM prompt + persona → SDXL 2D concept → VRM with hair/eye recolor + persona.md | **100% ✅**（2026-04-26 session 3 補完 persona）|
 | **MVP2** | + Image-to-3D（TripoSR）→ 3D character mesh → fit to VRoid → 真實臉部對齊 VRM | **100% ✅** 端對端 488s 全綠（Stage 1+2+2.5+3 全跑通）+ Evidence Collector 5 輪 audit 從 1→2.5→4.5→7.5→**8.5/10 PASS**。剩 VSeeFace 肉眼最終驗收（30 分鐘 user 端工作）|
-| **MVP3** | + Setup wizard / Webcam tracker / Multi-base / Preset import-export / Reference photo / PyInstaller | **100% ✅**（M3-1..M3-6 全部完成，pytest 99/99 全綠）|
+| **MVP3 功能程式碼** | + Setup wizard / Webcam tracker / Multi-base / Preset import-export / Reference photo / PyInstaller spec | **已實作 ✅**（Windows 打包與最終實機驗收仍 pending，見 `docs/RELEASE_READINESS.md`）|
 | ~~舊~~ MVP1 face_baker | **2D fallback**（保留供無 3D 模型時用）| 80%（v3 待 VSeeFace 驗證 — 可能仍偏，最多當「概念貼合」）|
 
 ### 技術債（標記）

@@ -25,6 +25,7 @@ logs/*
 *.jsonl
 setup_complete.flag
 **/manifest.lock.json
+assets/base_models/approved_models.json
 
 # Qt Linguist compiled
 *.qm

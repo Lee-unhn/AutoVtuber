@@ -6,7 +6,7 @@
 
 ## 🎯 一句話狀態
 
-**MVP1 + 2 + 3 + MVP4-α 全部完成，pytest 139 全綠，GitHub 14 commits 推完，主旨完成度 9.5/10。等使用者實機驗收 Sprint MVP4-α 三項升級的效果。**
+**MVP1 + 2 + 3 + MVP4-α 功能程式碼已完成，歷史紀錄為 pytest 139 全綠；2026-05-27 發現 AvatarSample base 不可作角色建立產品 base，現進入 release validation，先替換合法 base 再做實機驗收。**
 
 ---
 
@@ -21,9 +21,11 @@
 
 ---
 
-## 🚨 當前等待中：使用者實機驗收
+## 🚨 當前等待中：合法 base VRM 與其後的實機驗收
 
-**使用者要做**（路線 A — 最高優先）：
+**先決條件**：在產品輸出前取得自有或另行獲准、可供角色建立服務使用的 VRM 0.x base；AvatarSample A/B/C 僅可重現舊研究測試。
+
+合法 base 完成登錄後，使用者要做：
 
 ```powershell
 # 1. 開另一個 terminal 跑 Ollama

@@ -1,5 +1,7 @@
 # 🏗️ Architecture — AutoVtuber
 
+> **Release validation update (2026-05-27):** `AvatarSample_A/B/C` 僅保留作舊版結構測試重現，不可作角色建立產品的輸出 base。產品流程預設阻擋其生成，待匯入自有或另行獲准的 VRM 0.x base 後放行；追蹤表見 [`RELEASE_READINESS.md`](./RELEASE_READINESS.md)。
+>
 > 本檔案描述**當前實作狀態**（不是原計畫）。
 > 原始計畫見 `C:\Users\user\.claude\plans\serialized-scribbling-aurora.md`，與當前狀態之差異見章節「重大架構變動」。
 > 最後更新：**2026-06-04 MVP5 完成 + Reality Checker 三輪 PASS（8.0/10）**
@@ -52,7 +54,7 @@ flowchart TB
     end
 
     subgraph DATA["📦 資料 / 模型"]
-        BASE_VRM[(assets/base_models/<br/>AvatarSample_A/B/C.vrm)]
+        BASE_VRM[(assets/base_models/<br/>approved product base .vrm<br/>+ AvatarSample_A/B/C 驗證用)]
         SDXL_W[(models/sdxl/<br/>animagine-xl-4.0 6.5GB)]
         TSR_W[(stabilityai/TripoSR<br/>1.7GB HF cache)]
         REMBG[(rembg u2net.onnx<br/>176MB)]
