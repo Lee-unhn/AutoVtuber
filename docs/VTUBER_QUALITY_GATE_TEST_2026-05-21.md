@@ -98,14 +98,14 @@ It renders front, back, left, right, top, and bottom views without requiring Ope
 Generate test VRM from the sample concept and VRoid base:
 
 ```bash
-PYTHONPATH=src /Users/shixi/Desktop/SadTalker-first/SadTalker/venv/bin/python - <<'PY'
+PYTHONPATH=src <HOME>/Desktop/SadTalker-first/SadTalker/venv/bin/python - <<'PY'
 from pathlib import Path
 from PIL import Image
 from autovtuber.pipeline.job_spec import FormInput, HairLength, HairStyle, EyeShape, StyleGenre, Personality
 from autovtuber.pipeline.vrm_assembler import VRMAssembler
 from autovtuber.pipeline.vtuber_quality import VtuberQualityGate
 
-root = Path('/Users/shixi/Desktop/AutoVtuber')
+root = Path('<HOME>/Desktop/AutoVtuber')
 out = root / 'output' / 'character_20260521_quality_fixed.vrm'
 concept = Image.open(root / 'docs/images/sample_concept.png').convert('RGB')
 form = FormInput(
@@ -136,7 +136,7 @@ PY
 Render six views:
 
 ```bash
-PYTHONPATH=src /Users/shixi/Desktop/SadTalker-first/SadTalker/venv/bin/python \
+PYTHONPATH=src <HOME>/Desktop/SadTalker-first/SadTalker/venv/bin/python \
   scripts/render_vrm_six_views.py \
   output/character_20260521_quality_fixed.vrm \
   output/quality_fixed_views
@@ -145,7 +145,7 @@ PYTHONPATH=src /Users/shixi/Desktop/SadTalker-first/SadTalker/venv/bin/python \
 Run focused tests:
 
 ```bash
-PYTHONPATH=src /Users/shixi/Desktop/SadTalker-first/SadTalker/venv/bin/python -m pytest \
+PYTHONPATH=src <HOME>/Desktop/SadTalker-first/SadTalker/venv/bin/python -m pytest \
   tests/test_vrm_io.py \
   tests/test_arkit_blendshape_writer.py \
   tests/test_vtuber_quality.py
